@@ -1,5 +1,8 @@
 # behavSSF development version
 
+* Add a first vignette that applies the published state rules to the Hwange
+  zebra, with the grassland target chosen at the start of each step.
+
 * Fit combinations of lags from 22 to 26 hours in exact hourly models.
   The likelihood and simulator use each lag only within its segment.
 

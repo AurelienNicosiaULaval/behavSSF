@@ -8,14 +8,14 @@ GPS data.
 This is a development preview. [Source
 code](https://github.com/AurelienNicosiaULaval/behavSSF) · [Download the
 source
-package](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9003)
+package](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9004)
 
 ## Start with a worked example
 
-- [African
-  elephant](https://aureliennicosiaulaval.github.io/behavSSF/articles/elephant-lag-window.md).
-  See how lagged step lengths change the daily peak in step-length
-  correlation.
+- [Hwange
+  zebra](https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-hwange.md).
+  Apply the published rules to a GPS track and see which steps are
+  labelled travelling, foraging or resting.
 - [Red
   deer](https://aureliennicosiaulaval.github.io/behavSSF/articles/deer-restarts.md).
   Find the steps that change labels between two fitted solutions and see
@@ -24,9 +24,10 @@ package](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9
   condor](https://aureliennicosiaulaval.github.io/behavSSF/articles/condor-taxonomies.md).
   Define a taxonomy for flight states and compare the fitted labels with
   a proxy from the GPS track.
-
-[![The elephant’s daily correlation peak, observed and
-simulated](articles/elephant-lag-window_files/figure-html/correlation-1.png)](https://aureliennicosiaulaval.github.io/behavSSF/articles/elephant-lag-window.md)
+- [African
+  elephant](https://aureliennicosiaulaval.github.io/behavSSF/articles/elephant-lag-window.md).
+  See how lagged step lengths change the daily peak in step-length
+  correlation.
 
 ## Install from GitHub
 
@@ -43,10 +44,11 @@ introduces the published rules and the functions that implement them.
 
 ## Credits
 
-Aurélien Nicosia and Ilhem Bouderbala are the package authors. Ilhem
-wrote the original research functions. The published method is by Ilhem
-Bouderbala, Aurélien Nicosia and Daniel Fortin. [Article in PLOS
-ONE](https://doi.org/10.1371/journal.pone.0360547)
+Ilhem Bouderbala wrote the original research functions. Aurélien Nicosia
+reworked them for the R package and added plots, ways to present fitted
+results, and support for new state taxonomies. The published method is
+by Ilhem Bouderbala, Aurélien Nicosia and Daniel Fortin. [Article in
+PLOS ONE](https://doi.org/10.1371/journal.pone.0360547)
 
 # Package index
 
@@ -105,17 +107,20 @@ ONE](https://doi.org/10.1371/journal.pone.0360547)
 
 ### Worked examples
 
+- [Behavioural states of a Hwange
+  zebra](https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-hwange.md):
+
 - [When two fits label the same deer track
   differently](https://aureliennicosiaulaval.github.io/behavSSF/articles/deer-restarts.md):
 
 - [Configurable taxonomies for condor
   flight](https://aureliennicosiaulaval.github.io/behavSSF/articles/condor-taxonomies.md):
 
-- [Reference calculations and explicit ecological
-  assessment](https://aureliennicosiaulaval.github.io/behavSSF/articles/reference-workflow.md):
-
 - [Do nearby lags make the daily peak
   wider?](https://aureliennicosiaulaval.github.io/behavSSF/articles/elephant-lag-window.md):
 
   Compare the height and width of the daily correlation peak on the same
   elephant GPS test quarter.
+
+- [Reference calculations and explicit ecological
+  assessment](https://aureliennicosiaulaval.github.io/behavSSF/articles/reference-workflow.md):

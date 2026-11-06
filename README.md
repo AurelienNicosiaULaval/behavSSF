@@ -1,6 +1,6 @@
 # behavSSF
 
-Development preview 0.1.0.9003. [Documentation and worked examples](https://aureliennicosiaulaval.github.io/behavSSF/).
+Development preview 0.1.0.9004. [Documentation and worked examples](https://aureliennicosiaulaval.github.io/behavSSF/).
 
 `behavSSF` fits hidden Markov step selection models. You can use the behavioural rules from Bouderbala, Nicosia and Fortin (2026) or define your own state labels and rules. [PLOS ONE, e0360547](https://doi.org/10.1371/journal.pone.0360547)
 
@@ -18,6 +18,9 @@ library(behavSSF)
 
 Installation requires an R-compatible C++ toolchain. The trajectory plots
 use `ggplot2`.
+
+Start with the [Hwange zebra vignette](https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-hwange.html)
+to apply the article's rules to the study data and map the fitted states.
 
 Use `ssf_taxonomy()` to define labels, a ranking signature and checks for a
 candidate. See the [condor flight vignette](https://aureliennicosiaulaval.github.io/behavSSF/articles/condor-taxonomies.html) for
@@ -149,7 +152,9 @@ when applying it to a new trajectory.
 
 ## Credits and provenance
 
-Ilhem Bouderbala wrote the original research functions for the published workflow. `behavSSF` carries over the short-run and long-run fitting strategy and the published state labelling rules. It has its own likelihood and decoding routines and adds exact normalisation for supported kernels, configurable taxonomies and diagnostics.
+Ilhem Bouderbala wrote the original research functions. Aurélien Nicosia
+reworked them for the R package and added plots, ways to present fitted
+results, and support for new state taxonomies. `behavSSF` carries over the short-run and long-run fitting strategy and the published state labelling rules. It has its own likelihood and decoding routines and adds exact normalisation for supported kernels, configurable taxonomies and diagnostics.
 
 The methodological references are the article and the [Figshare archive, version 2](https://doi.org/10.6084/m9.figshare.34077912.v2), by Ilhem Bouderbala, Aurélien Nicosia and Daniel Fortin. The Figshare archive is distributed under CC BY 4.0. `citation("behavSSF")` gives separate entries for the package and the article.
 

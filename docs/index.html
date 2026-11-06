@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9003</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9004</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,10 +35,11 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/deer-restarts.html">When two fits label the same deer track differently</a></li>
+<li><a class="dropdown-item" href="articles/zebra-hwange.html">Behavioural states of a Hwange zebra</a></li>
+    <li><a class="dropdown-item" href="articles/deer-restarts.html">When two fits label the same deer track differently</a></li>
     <li><a class="dropdown-item" href="articles/condor-taxonomies.html">Configurable taxonomies for condor flight</a></li>
-    <li><a class="dropdown-item" href="articles/reference-workflow.html">Reference calculations and explicit ecological assessment</a></li>
     <li><a class="dropdown-item" href="articles/elephant-lag-window.html">Do nearby lags make the daily peak wider?</a></li>
+    <li><a class="dropdown-item" href="articles/reference-workflow.html">Reference calculations and explicit ecological assessment</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -56,19 +57,20 @@
 <div class="page-header"><h1 id="behavssf">behavSSF<a class="anchor" aria-label="anchor" href="#behavssf"></a>
 </h1></div>
 <p>Fit hidden Markov step-selection models for animal movement. The package lets you check how starting values affect the fitted states, give those states names using your own rules, and compare simulated tracks with the GPS data.</p>
-<p>This is a development preview. <a href="https://github.com/AurelienNicosiaULaval/behavSSF" class="external-link">Source code</a> · <a href="https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9003" class="external-link">Download the source package</a></p>
+<p>This is a development preview. <a href="https://github.com/AurelienNicosiaULaval/behavSSF" class="external-link">Source code</a> · <a href="https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9004" class="external-link">Download the source package</a></p>
 <div class="section level2">
 <h2 id="start-with-a-worked-example">Start with a worked example<a class="anchor" aria-label="anchor" href="#start-with-a-worked-example"></a>
 </h2>
 <ul>
 <li>
-<a href="articles/elephant-lag-window.html">African elephant</a>. See how lagged step lengths change the daily peak in step-length correlation.</li>
+<a href="articles/zebra-hwange.html">Hwange zebra</a>. Apply the published rules to a GPS track and see which steps are labelled travelling, foraging or resting.</li>
 <li>
 <a href="articles/deer-restarts.html">Red deer</a>. Find the steps that change labels between two fitted solutions and see how that changes the share ending in forest.</li>
 <li>
 <a href="articles/condor-taxonomies.html">Andean condor</a>. Define a taxonomy for flight states and compare the fitted labels with a proxy from the GPS track.</li>
+<li>
+<a href="articles/elephant-lag-window.html">African elephant</a>. See how lagged step lengths change the daily peak in step-length correlation.</li>
 </ul>
-<p><a href="articles/elephant-lag-window.html"><img src="articles/elephant-lag-window_files/figure-html/correlation-1.png" alt="The elephant’s daily correlation peak, observed and simulated"></a></p>
 </div>
 <div class="section level2">
 <h2 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
@@ -82,7 +84,7 @@
 <div class="section level2">
 <h2 id="credits">Credits<a class="anchor" aria-label="anchor" href="#credits"></a>
 </h2>
-<p>Aurélien Nicosia and Ilhem Bouderbala are the package authors. Ilhem wrote the original research functions. The published method is by Ilhem Bouderbala, Aurélien Nicosia and Daniel Fortin. <a href="https://doi.org/10.1371/journal.pone.0360547" class="external-link">Article in PLOS ONE</a></p>
+<p>Ilhem Bouderbala wrote the original research functions. Aurélien Nicosia reworked them for the R package and added plots, ways to present fitted results, and support for new state taxonomies. The published method is by Ilhem Bouderbala, Aurélien Nicosia and Daniel Fortin. <a href="https://doi.org/10.1371/journal.pone.0360547" class="external-link">Article in PLOS ONE</a></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

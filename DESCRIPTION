@@ -1,9 +1,11 @@
 Package: behavSSF
 Title: Guided Behavioural State Assessment for Step Selection Models
-Version: 0.1.0.9003
+Version: 0.1.0.9004
 Date: 2026-11-06
 Authors@R: c(
-    person("Aurélien", "Nicosia", email = "aurelien.nicosia@mat.ulaval.ca", role = c("aut", "cre")),
+    person("Aurélien", "Nicosia", email = "aurelien.nicosia@mat.ulaval.ca",
+           role = c("aut", "cre"),
+           comment = "Adapted the research functions for the package and added visualisations, result summaries and configurable state taxonomies"),
     person("Ilhem", "Bouderbala", role = "aut", comment = "Original research functions and published methodological framework"),
     person("Daniel", "Fortin", role = "ctb", comment = "Published methodological framework"))
 Description: A development implementation of hidden Markov step selection

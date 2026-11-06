@@ -17,10 +17,11 @@ articles:
 - title: Worked examples
   navbar: ~
   contents:
+  - zebra-hwange
   - deer-restarts
   - condor-taxonomies
-  - reference-workflow
   - articles/elephant-lag-window
+  - reference-workflow
 reference:
 - title: Fit and assess models
   contents:
