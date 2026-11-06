@@ -1,0 +1,8 @@
+^_pkgdown[.]yml$
+^data-raw$
+^pkgdown$
+^docs$
+^analysis$
+^vignettes/articles$
+^[.]github$
+^LICENSE$

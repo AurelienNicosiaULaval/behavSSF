@@ -1,0 +1,29 @@
+Package: behavSSF
+Title: Guided Behavioural State Assessment for Step Selection Models
+Version: 0.1.0.9003
+Date: 2026-11-06
+Authors@R: c(
+    person("Aurélien", "Nicosia", email = "aurelien.nicosia@mat.ulaval.ca", role = c("aut", "cre")),
+    person("Ilhem", "Bouderbala", role = "aut", comment = "Original research functions and published methodological framework"),
+    person("Daniel", "Fortin", role = "ctb", comment = "Published methodological framework"))
+Description: A development implementation of hidden Markov step selection
+    likelihoods, segmented state decoding, multistart fitting, and explicit
+    ecological assessment rules. Implements a reference workflow based on
+    Bouderbala, Nicosia and Fortin (2026) <doi:10.1371/journal.pone.0360547>.
+    Kernel conventions are explicit and failed candidate models remain visible.
+    Supports homogeneous transitions and, for exact two-state models on
+    hourly data, daily cycles in transitions and mean step length, as well as
+    state-specific lag effects. Compatible gamma-von Mises kernels are
+    normalised analytically and can include a prospective target effect.
+    An analytic-gradient engine and an R reference implementation are provided.
+URL: https://aureliennicosiaulaval.github.io/behavSSF/, https://github.com/AurelienNicosiaULaval/behavSSF
+BugReports: https://github.com/AurelienNicosiaULaval/behavSSF/issues
+License: GPL-3
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: stats
+Suggests: testthat (>= 3.0.0), knitr, rmarkdown, ggplot2, patchwork
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.0
+Roxygen: list(markdown = TRUE)

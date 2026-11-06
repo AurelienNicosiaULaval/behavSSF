@@ -1,0 +1,3 @@
+"model","training_steps","test_steps","train_ll","test_ll","df","n_starts","n_accepted","n_solutions","best_start","test_score_per_step"
+"current",16434,5478,-4441.20598792186,355.205039097909,28,8,8,2,7,0.0648421027926085
+"window",16434,5478,-4382.57670804984,374.330393838282,36,8,8,1,2,0.0683334052278719

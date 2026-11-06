@@ -1,0 +1,223 @@
+---
+title: "When two fits label the same deer track differently"
+output:
+  rmarkdown::html_vignette:
+    self_contained: true
+vignette: >
+  %\VignetteIndexEntry{When two fits label the same deer track differently}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Fit a two-state model several times and you may get different state sequences for the same track. Here we use the GPS track of one red deer to see where this happens. We give the states the names Short steps and Long steps in order of fitted mean length. The names describe movement over a six-hour interval.
+
+## Fit the model from several starting values
+
+The track comes from the [`deer` dataset in `amt`](https://search.r-project.org/CRAN/refmans/amt/html/deer.html). We kept a step when its interval and the preceding interval were both within ten minutes of six hours and in the same source burst. The preceding interval supplies the incoming heading for the turn angle. This leaves 759 steps in 29 uninterrupted segments. The prepared data are included with the package, with coordinates and lengths in kilometres.
+
+```{r setup, message=FALSE}
+library(behavSSF)
+library(ggplot2)
+library(patchwork)
+
+gps <- readRDS(system.file("extdata", "deer-restart-steps.rds",
+  package = "behavSSF", mustWork = TRUE))
+steps <- prepare_ssf_steps(gps, density_measure = "area", time = "time_utc")
+
+short_long <- ssf_taxonomy(
+  "short_long", c("Short steps", "Long steps"),
+  rules = function(s) {
+    c(length_ratio = s$metrics["Long steps", "mean_step"] >
+        2 * s$metrics["Short steps", "mean_step"])
+  }
+)
+```
+
+We require the long-step mean to be more than twice the short-step mean. This is a rule for this example. The model uses step lengths and turns with exact normalisation. For a first look at another track, a call like this runs 30 random starts.
+
+```{r quick-start, eval=FALSE}
+check <- diagnose_ssf_restarts(steps, short_long, n_starts = 30, seed = 60200)
+```
+
+For the deer we use the 176 starts listed at the end of the page. Each start gets its own fit, and all fits use the same model and data.
+
+```{r restart-plan, include=FALSE}
+anchors <- lapply(c(A = 9871L, B = 1729L), function(seed) {
+  fit_ssf(steps, n_starts = 8, short_iter = 100, long_iter = 900,
+    seed = seed, normalization = "exact")
+})
+
+tpm <- function(p) rbind(c(p[1], 1 - p[1]), c(1 - p[2], p[2]))
+broad <- function() {
+  limits <- log(stats::quantile(steps$step, c(.1, .9), names = FALSE))
+  mean <- sort(exp(stats::runif(2, limits[1], limits[2])))
+  shape <- exp(stats::runif(2, log(.5), log(6)))
+  list(coefficients = rbind(step = -shape / mean, log_step = shape - 2,
+    cos_angle = stats::runif(2, -1.2, 1.2)),
+    transition = tpm(stats::runif(2, .2, .94)))
+}
+near <- function(fit, spread) {
+  b <- stats::coef(fit)
+  i <- order(movement_metrics(b, "area")$mean_step)
+  b <- b[, i, drop = FALSE]
+  b["step", ] <- -exp(log(-b["step", ]) + stats::rnorm(2, sd = spread))
+  b["log_step", ] <- exp(log(b["log_step", ] + 2) + stats::rnorm(2, sd = spread)) - 2
+  b["cos_angle", ] <- b["cos_angle", ] + stats::rnorm(2, sd = spread)
+  self <- stats::plogis(stats::qlogis(diag(fit$transition)[i]) +
+    stats::rnorm(2, sd = spread))
+  list(coefficients = b, transition = tpm(self))
+}
+
+family <- rep(c("Package starts", "Broad starts", "Near A", "Near B"), c(48, 48, 40, 40))
+seeds <- 60000L + seq_along(family)
+spreads <- c(rep(c(.5, 1), each = 24), rep(NA_real_, 48),
+  rep(rep(c(.10, .25), each = 20), 2))
+starts <- lapply(seq_along(seeds), function(i) {
+  set.seed(seeds[i])
+  switch(family[i],
+    "Package starts" = list(seed = seeds[i], spread = spreads[i]),
+    "Broad starts" = list(initial_values = broad()),
+    "Near A" = list(initial_values = near(anchors$A, spreads[i])),
+    "Near B" = list(initial_values = near(anchors$B, spreads[i])))
+})
+names(starts) <- family
+```
+
+```{r fit}
+check <- diagnose_ssf_restarts(steps, short_long, starts = starts)
+print(check)
+```
+
+The solution numbers follow the log likelihood, with the highest value first. Two fits count as the same solution if their likelihoods and parameters are close and they give the same decoded labels after aligning the states. `check$restarts` gives the outcome of every start, including the reason for each rejection.
+
+```{r outcomes, echo=FALSE}
+outcome <- ifelse(is.na(check$restarts$solution), "Unsuccessful",
+  paste("Solution", check$restarts$solution))
+knitr::kable(table(Starting.values = check$restarts$group, Outcome = outcome))
+```
+
+```{r states, echo=FALSE}
+states <- check$states
+knitr::kable(data.frame(Solution = states$solution, Label = states$label,
+  `Fitted mean (m)` = round(1000 * states$mean_step, 1),
+  `Decoded steps` = states$n_steps, check.names = FALSE), row.names = FALSE)
+```
+
+## Find the steps that switch
+
+The comparison returns one row per observed step, with the GPS columns, both labels and a flag for a change. `pair$transitions` counts the steps for every pair of labels. Read the rows as the labels under solution 1 and the columns as the labels under solution 2.
+
+```{r compare}
+pair <- compare_ssf_solutions(check, from = 1, to = 2)
+pair$transitions
+
+changed <- subset(pair$steps, .changed,
+  select = c(ID, start_fix, end_fix, time_utc, step, .state_from, .state_to))
+head(changed, 4)
+```
+
+On this track, `r nrow(changed)` of `r nrow(pair$steps)` steps change label between the two fits shown here. The switches go from Short steps in the first fit to Long steps in the second. The first fit gives a larger mean to its long-step state and assigns fewer steps to it. The label of any one step also depends on its turn and the sequence of nearby observations.
+
+```{r full-map, fig.width=7, fig.height=6.1, out.width="100%", fig.alt="Complete deer trajectory with orange endpoints on steps that change label between the two fits."}
+plot_ssf_changes(pair) +
+  labs(x = "Relative east (km)", y = "Relative north (km)")
+```
+
+An orange dot marks the end of each step that switches. At this scale, several short movements overlap. Use `segment` to zoom in on a continuous part of the track. Below, each column in the strip represents one step. The dot in the second row marks a change from the first row.
+
+```{r segment, fig.width=8.5, fig.height=5.6, out.width="100%", fig.alt="Map and two aligned label strips for the longest uninterrupted deer segment. Orange dots show steps that switch from Short steps to Long steps."}
+longest <- names(which.max(table(pair$steps$ID)))
+track <- subset(pair$steps, ID == longest)
+strip <- rbind(
+  data.frame(step = track$.segment_step, fit = "Solution 1", label = track$.state_from),
+  data.frame(step = track$.segment_step, fit = "Solution 2", label = track$.state_to)
+)
+strip$fit <- factor(strip$fit, levels = c("Solution 2", "Solution 1"))
+
+route <- plot_ssf_changes(pair, segment = longest) +
+  labs(title = "Longest uninterrupted segment",
+    x = "Relative east (km)", y = "Relative north (km)")
+labels <- ggplot(strip, aes(step, fit)) +
+  geom_tile(aes(fill = label), width = .97, height = .8) +
+  geom_point(data = subset(track, .changed),
+    aes(.segment_step, "Solution 2"), inherit.aes = FALSE,
+    colour = "#AE3E1B", size = 1.5) +
+  scale_fill_manual(values = c("Short steps" = "#DCE7EE", "Long steps" = "#506879")) +
+  labs(x = "Step within segment", y = NULL, fill = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid = element_blank(), legend.position = "bottom")
+
+route / labels + plot_layout(heights = c(3, 1.2))
+```
+
+To save the list of switches, use `write.csv(changed, "changed-steps.csv", row.names = FALSE)`. The fix IDs refer to rows of the original deer dataset. The timestamp is for the end fix. For the smoothed state probabilities under each fit, see `pair$posterior_from` and `pair$posterior_to`. They follow the same step order as `pair$steps`.
+
+## Which solution should you use?
+
+For the main map of the deer's movement, use solution 1. Both solutions passed the checks and fit the same model to the same GPS steps. Solution 1 has the higher log likelihood (`r sprintf("%.2f", check$solutions$log_likelihood[1])` versus `r sprintf("%.2f", check$solutions$log_likelihood[2])`), so it gives the better fit to these steps among the solutions we found. Solution 2 came up more often, but that count depends on the starting values we tried.
+
+Keep the labels Short steps and Long steps when describing movement from these GPS fixes. To interpret a state as travelling or foraging, look for separate evidence. For example, compare the labels with field observations or accelerometer records for the same intervals, if you have them. [Saldanha et al. (2023)](https://doi.org/10.1186/s40462-023-00401-5)
+
+If your conclusion uses the labels, repeat the calculation with solution 2. For example, solution 1 labels `r sprintf("%.0f%%", 100 * mean(pair$steps$.state_from == "Long steps"))` of the steps as Long steps, compared with `r sprintf("%.0f%%", 100 * mean(pair$steps$.state_to == "Long steps"))` under solution 2. Report both values if the share matters to your question. On the map, the orange marks show where the choice of fit changes the label.
+
+## Do short and long steps end in forest?
+
+For each label, divide the number of steps that end in forest by the number of steps with that label. We read forest cover from the 25 m cell at each GPS endpoint in the [forest map supplied with `amt`](https://jmsigner.r-universe.dev/amt/doc/manual.html#sh_forest). The prepared data store this value in `end_in_forest`. The movement fits use lengths and turns, and we bring in the forest map after fitting to describe where the steps end.
+
+```{r forest-shares}
+end_forest <- pair$steps$end_in_forest
+forest_counts <- function(state, solution) {
+  counts <- table(state, factor(end_forest, levels = c(FALSE, TRUE)))
+  data.frame(state = rownames(counts), solution = solution,
+    forest = as.integer(counts[, "TRUE"]), total = as.integer(rowSums(counts)))
+}
+
+forest_share <- rbind(
+  forest_counts(pair$steps$.state_from, "Solution 1"),
+  forest_counts(pair$steps$.state_to, "Solution 2")
+)
+forest_share$share <- with(forest_share, forest / total)
+```
+
+```{r forest-comparison, echo=FALSE, fig.width=8.2, fig.height=5.1, fig.retina=2, out.width="100%", fig.alt="Forest endpoint shares under the two fits. The share for short steps falls from 28.3 to 9.7 percent, and the share for long steps rises from 36.8 to 37.7 percent. Each bar gives the forest count and the number of steps with that label."}
+state_order <- levels(pair$steps$.state_from)
+change_pp <- 100 * with(forest_share, tapply(share, factor(state, state_order), diff))
+panels <- sprintf("%s  |  %+.1f percentage points", state_order, change_pp)
+forest_share$panel <- factor(panels[match(forest_share$state, state_order)], levels = panels)
+forest_share$solution <- factor(forest_share$solution, levels = c("Solution 2", "Solution 1"))
+forest_share$label <- with(forest_share, sprintf("%.1f%%  (%d/%d)", 100 * share, forest, total))
+
+ggplot(forest_share, aes(share, solution, fill = solution)) +
+  geom_col(width = .58, show.legend = FALSE) +
+  geom_text(aes(x = share + .012, label = label), hjust = 0, size = 4.2, colour = "#183345") +
+  facet_wrap(~ panel, ncol = 1) +
+  scale_fill_manual(values = c("Solution 1" = "#226F71", "Solution 2" = "#79518C")) +
+  scale_x_continuous(limits = c(0, .60), breaks = seq(0, .6, .1),
+    labels = function(x) sprintf("%.0f%%", 100 * x), expand = expansion(mult = 0)) +
+  labs(title = "How often do steps end in forest?",
+    subtitle = sprintf("Same %d GPS endpoints in both fits. %d in forest.", length(end_forest), sum(end_forest)),
+    x = "Share ending in forest", y = NULL,
+    caption = "Counts in parentheses give forest endpoints / steps with that label.") +
+  theme_minimal(base_size = 13) +
+  theme(text = element_text(colour = "#183345"),
+    plot.title = element_text(size = 21, margin = margin(b = 5)),
+    plot.subtitle = element_text(colour = "#486474", margin = margin(b = 10)),
+    plot.caption = element_text(hjust = 0, colour = "#486474", margin = margin(t = 8)),
+    plot.title.position = "plot", plot.caption.position = "plot",
+    plot.margin = margin(12, 12, 8, 12),
+    strip.text = element_text(hjust = 0, face = "bold", size = 12),
+    strip.background = element_rect(fill = "#EDF3F4", colour = NA),
+    panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(),
+    panel.spacing = grid::unit(12, "pt"))
+```
+
+The choice of solution matters most for short steps. Of the `r sum(pair$steps$.changed)` steps that switch to Long steps in solution 2, `r sum(end_forest & pair$steps$.changed)` end in forest. The share falls among the remaining short steps, while the share for long steps changes little. These proportions describe the observed endpoints. To assess forest selection, we would also need to compare used endpoints with available ones.
+
+## Starting values used for the deer
+
+We used 48 starts from the package's default initialisation at two spreads, 48 starts spread across a wider range of movement and transition values, and 40 near each of two earlier fits. A and B here refer to the centres of those last two sets of starting values. The likelihood determines the final solution numbers. This code creates the list passed to `starts` above.
+
+```{r show-plan, ref.label="restart-plan", eval=FALSE, echo=TRUE}
+```
+
+GPS fixes from Verein für Wildtierforschung Dresden und Göttingen e.V., distributed with [`amt` 0.3.1.0](https://cran.r-project.org/package=amt). The preparation script in the package source is `data-raw/prepare-deer.R`.

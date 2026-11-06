@@ -1,0 +1,181 @@
+---
+title: "Do nearby lags make the daily peak wider?"
+subtitle: "Salif Keita’s hourly GPS track · same test quarter"
+description: Compare the height and width of the daily correlation peak on the same elephant GPS test quarter.
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(patchwork)
+
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center", out.width = "100%",
+  dpi = 110, fig.retina = 2, message = FALSE)
+read <- function(name) utils::read.csv(file.path("elephant-results", paste0(name, ".csv")))
+values <- read("intervals")
+draws <- read("draws")
+fits <- read("fits")
+coefficients <- read("lag-coefficients")
+models <- c(observed = "Observed GPS", current = "Lags 1 and 24 h",
+  window = "Lags 1 and 22–26 h")
+colours <- c(observed = "#203F51", current = "#007D73", window = "#AF532B")
+ink <- "#203F51"
+muted <- "#506B79"
+fmt <- function(x, d = 3) sprintf(paste0("%.", d, "f"), x)
+metric <- function(name) values[values$metric == name, ]
+at24 <- metric("acf_24")
+height <- metric("peak_height")
+width <- metric("peak_width")
+stopifnot(identical(at24$model, c("current", "window")))
+
+theme_track <- theme_minimal(base_size = 13) +
+  theme(text = element_text(colour = ink), axis.text = element_text(colour = muted),
+    panel.grid.minor = element_blank(), panel.grid.major = element_line(colour = "#E4ECEE"),
+    plot.title = element_text(colour = ink, face = "plain", size = 19, margin = margin(b = 6)),
+    plot.subtitle = element_text(colour = muted, margin = margin(b = 9)),
+    plot.caption = element_text(colour = muted, hjust = 0, margin = margin(t = 9)),
+    plot.title.position = "plot", plot.caption.position = "plot",
+    plot.margin = margin(10, 15, 8, 12), panel.spacing = grid::unit(1.5, "lines"),
+    strip.text = element_text(colour = ink, size = 13, margin = margin(b = 7)),
+    legend.position = "bottom")
+panel <- theme_track + theme(plot.title = element_text(size = 15))
+series <- scale_colour_manual(values = colours, breaks = names(models), labels = unname(models), name = NULL)
+fills <- scale_fill_manual(values = colours, guide = "none")
+```
+
+## The correlation around 24 hours
+
+The reference model uses the lengths one and 24 hours earlier. The new model keeps the one-hour lag and estimates five additional coefficients per state, one for each lag from 22 to 26 hours. Both models retain the daily curves for state transitions and mean step lengths. We refitted both on the first 16,434 steps and used the same 5,478 test steps as before. [Wall et al. (2014), GPS archive](https://doi.org/10.5441/001/1.f321pf80)
+
+```{r correlation, fig.width=11.8, fig.height=5.2, fig.alt="The model with lags 22 to 26 raises the simulated correlations on both sides of the daily peak. The observed GPS curve is higher and wider around 24 hours."}
+acf <- subset(values, startsWith(metric, "acf_"))
+acf$lag <- as.integer(sub("acf_", "", acf$metric))
+observed <- unique(acf[c("lag", "observed")])
+
+plot_acf <- function(a, o, focus = FALSE) {
+  g <- ggplot(a, aes(lag, median, colour = model))
+  if (focus) g <- g + annotate("rect", xmin = 22, xmax = 26, ymin = -Inf,
+    ymax = Inf, fill = "#EAF1F0", alpha = .7)
+  g + geom_vline(xintercept = if (focus) 24 else c(24, 48), linetype = "dashed",
+      colour = "#B7C7CE", linewidth = .65) +
+    geom_hline(yintercept = 0, colour = "#CCD8DC", linewidth = .55) +
+    geom_ribbon(aes(ymin = lower, ymax = upper, fill = model), colour = NA, alpha = .15) +
+    geom_line(linewidth = 1) +
+    geom_line(data = o, aes(lag, observed, colour = "observed"),
+      inherit.aes = FALSE, linewidth = 1.1) +
+    geom_point(data = if (focus) o else subset(o, lag == 24),
+      aes(lag, observed), inherit.aes = FALSE, colour = ink, size = if (focus) 1.7 else 2.3) +
+    series + fills + labs(x = "Hours between steps", y = "Step-length correlation") +
+    panel + theme(panel.grid.major.x = element_blank())
+}
+left <- plot_acf(acf, observed) +
+  scale_x_continuous(breaks = c(1, 12, 24, 36, 48), expand = expansion(add = c(.3, 1.4))) +
+  labs(title = "A   From one to 48 hours")
+right <- plot_acf(subset(acf, lag %in% 18:30), subset(observed, lag %in% 18:30), TRUE) +
+  scale_x_continuous(breaks = seq(18, 30, 2)) +
+  labs(title = "B   A closer look at the daily peak", y = NULL) +
+  theme(legend.position = "none")
+(left | right) +
+  plot_annotation(title = "Nearby lags lift the shoulders of the daily peak",
+    subtitle = "Step-length correlations on the same test quarter. The pale strip marks lags 22 to 26 hours.",
+    caption = "Model lines and bands show medians and central 95% ranges from 199 forward simulations per model.",
+    theme = theme_track)
+```
+
+At 24 hours, the simulated median rises from `r fmt(at24$median[1])` to `r fmt(at24$median[2])`, compared with `r fmt(at24$observed[1])` in the GPS data. Across the four neighbouring lags (22, 23, 25 and 26 hours), the median average correlation rises from `r fmt(metric("around_peak")$median[1])` to `r fmt(metric("around_peak")$median[2])`. The observed average is `r fmt(metric("around_peak")$observed[1])`.
+
+## Height and width
+
+For each observed or simulated curve, we locate the highest correlation between 22 and 26 hours. The width is the distance between the closest half-height crossings on either side of that point, interpolated between whole hours. We measure half-height above the higher of the two shoulder correlations at 18 and 30 hours. A curve whose peak is at or below that baseline has no defined width.
+
+```{r height-width, fig.width=11.8, fig.height=4.9, fig.alt="The model with nearby lags increases the local peak height and the median width at half height. Both model medians remain below the observed GPS values."}
+row_order <- rev(unname(models[c("current", "window")]))
+plot_metric <- function(name, title, xlabel, digits) {
+  summary <- metric(name)
+  summary$label <- factor(models[summary$model], levels = row_order)
+  dots <- data.frame(model = draws$model, value = draws[[name]],
+    label = factor(models[draws$model], levels = row_order))
+  dots <- dots[is.finite(dots$value), ]
+  ggplot(summary, aes(median, label, colour = model)) +
+    geom_vline(xintercept = summary$observed[1L], colour = ink, linetype = "dashed", linewidth = .68) +
+    geom_point(data = dots, aes(value, label, colour = model), inherit.aes = FALSE,
+      position = position_jitter(width = 0, height = .11, seed = 782L), alpha = .21, size = 1.2) +
+    geom_errorbar(aes(xmin = lower, xmax = upper), orientation = "y", width = .18, linewidth = .85) +
+    geom_point(shape = 21, size = 3, fill = "white", stroke = 1.2) +
+    geom_text(aes(label = fmt(median, digits)), nudge_y = .26, size = 4) +
+    annotate("text", x = summary$observed[1L], y = 2.40,
+      label = paste("GPS", fmt(summary$observed[1L], digits)), hjust = 1.1, colour = ink, size = 3.8) +
+    scale_y_discrete(expand = expansion(add = .49)) +
+    scale_x_continuous(expand = expansion(mult = c(.08, .06))) +
+    scale_colour_manual(values = colours, guide = "none") +
+    labs(title = title, x = xlabel, y = NULL) +
+    panel + theme(panel.grid.major.y = element_blank())
+}
+left <- plot_metric("peak_height", "A   Height of the local peak", "Maximum correlation from 22 to 26 hours", 3)
+right <- plot_metric("peak_width", "B   Width at half height", "Hours between half-height crossings", 2)
+(left | right) +
+  plot_annotation(title = "The simulated peak is broader and slightly higher",
+    subtitle = "Each dot is a simulated track. The dashed lines mark the observed GPS values.",
+    caption = "Open circles show medians. Bars show the central 95% of simulated values.",
+    theme = theme_track)
+```
+
+The median width increases from `r fmt(width$median[1], 2)` to `r fmt(width$median[2], 2)` hours. The observed width is `r fmt(width$observed[1], 2)` hours. A width could be measured in `r width$n_defined[1]` of 199 simulations for the reference model and `r width$n_defined[2]` of 199 for the extended model.
+
+```{r metrics}
+rows <- lapply(c("acf_1", "acf_24", "peak_height", "peak_width", "centered_acf_24"), metric)
+digits <- c(3, 3, 3, 2, 3)
+column <- function(field, i)
+  vapply(seq_along(rows), function(j) fmt(rows[[j]][[field]][i], digits[j]), "")
+knitr::kable(data.frame(
+  Quantity = c("Correlation at 1 hour", "Correlation at 24 hours", "Local peak height",
+    "Width at half height (hours)", "24-hour correlation after hourly centring",
+    "Test log predictive density per step"),
+  Observed = c(column("observed", 1L), ""),
+  `Lags 1 and 24 h` = c(column("median", 1L), fmt(fits$test_score_per_step[1L], 4)),
+  `Lags 1 and 22–26 h` = c(column("median", 2L), fmt(fits$test_score_per_step[2L], 4)),
+  check.names = FALSE))
+```
+
+Hourly centring subtracts the mean length for each clock hour separately in the observed track and in each simulation. The test log score predicts each step from the available observed history. Forward simulations use their own generated lengths.
+
+## The lag effects within each state
+
+```{r coefficients, fig.width=10.8, fig.height=4.7, fig.alt="Estimated effects of each lag differ between the short- and long-step states. The 22-to-26-hour model distributes the effect across several neighbouring lags."}
+effect <- subset(coefficients, lag >= 22 & (model == "window" | lag == 24))
+effect$state <- factor(effect$state, levels = c("Short steps", "Long steps"))
+effect$change <- effect$multiplier - 1
+ggplot(effect, aes(lag, change, colour = model)) +
+  geom_hline(yintercept = 0, colour = "#CBD7DC", linewidth = .65) +
+  geom_segment(data = subset(effect, model == "window"),
+    aes(xend = lag, y = 0, yend = change), linewidth = .95, show.legend = FALSE) +
+  geom_point(aes(shape = model), size = 3.3) +
+  facet_wrap(~ state) +
+  scale_x_continuous(breaks = 22:26) +
+  scale_y_continuous(labels = function(x) sprintf("%.0f%%", 100*x)) +
+  scale_colour_manual(values = colours, breaks = c("current", "window"),
+    labels = unname(models[c("current", "window")]), name = NULL) +
+  scale_shape_manual(values = c(current = 18, window = 16), breaks = c("current", "window"),
+    labels = unname(models[c("current", "window")]), name = NULL) +
+  labs(title = "The longer history contributes at several lags",
+    subtitle = "Estimated change in mean length if the step at that lag was twice as long.",
+    x = "Lag in hours", y = "Change in conditional mean length",
+    caption = "Each point holds the current state, clock hour and all other lagged lengths fixed.") +
+  theme_track
+```
+
+Each lag uses only past lengths within the same uninterrupted segment. The sum of the absolute lag coefficients is below one in each state. The two models were fitted from multiple starts and selected by training likelihood after numerical and state checks. All `r fits$n_accepted[2]` accepted starts of the extended model reached the same likelihood solution to the reporting precision. This is a repeated benchmark on one track. [Stoye, Hoyer and Langrock (2025), higher-order autoregression in movement models](https://doi.org/10.1007/s13253-025-00705-6)
+
+## Reproduce the comparison
+
+The analysis script keeps each test segment’s starting hour, heading, position and length. Download the script and summary tables from the repository. The GPS archive is available from Movebank. [Analysis script](https://github.com/AurelienNicosiaULaval/behavSSF/blob/main/analysis/elephant-lag-window.R) · [Tables](https://github.com/AurelienNicosiaULaval/behavSSF/tree/main/vignettes/articles/elephant-results)
+
+```{r reproduce, eval=FALSE, echo=TRUE}
+install.packages("remotes")
+remotes::install_github("AurelienNicosiaULaval/behavSSF", ref = "v0.1.0.9003")
+if (!file.exists("elephant.csv")) {
+  download.file(paste0("https://datarepository.movebank.org/server/api/core/bitstreams/",
+    "77e38af2-b5fc-4c10-9e6d-f36b2adf9ea9/content"), "elephant.csv", mode = "wb")
+}
+stopifnot(system2(file.path(R.home("bin"), "Rscript"),
+  c("--vanilla", "elephant-lag-window.R", "elephant.csv", "results")) == 0)
+```

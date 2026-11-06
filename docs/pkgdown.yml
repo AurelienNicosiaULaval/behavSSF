@@ -1,0 +1,12 @@
+pandoc: '3.9'
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  condor-taxonomies: condor-taxonomies.html
+  deer-restarts: deer-restarts.html
+  articles/elephant-lag-window: elephant-lag-window.html
+  reference-workflow: reference-workflow.html
+last_built: 2026-11-06T15:30Z
+urls:
+  reference: https://aureliennicosiaulaval.github.io/behavSSF/reference
+  article: https://aureliennicosiaulaval.github.io/behavSSF/articles

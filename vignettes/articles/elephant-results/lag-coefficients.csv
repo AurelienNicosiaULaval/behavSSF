@@ -1,0 +1,25 @@
+"model","state","lag","coefficient","multiplier"
+"current","Short steps",1,0.0706341677942011,1.05017821071438
+"current","Short steps",22,0,1
+"current","Short steps",23,0,1
+"current","Short steps",24,0.103638814620461,1.07448013810514
+"current","Short steps",25,0,1
+"current","Short steps",26,0,1
+"current","Long steps",1,0.462075887597081,1.37752250391605
+"current","Long steps",22,0,1
+"current","Long steps",23,0,1
+"current","Long steps",24,0.0323642521651478,1.0226867063255
+"current","Long steps",25,0,1
+"current","Long steps",26,0,1
+"window","Short steps",1,0.0650875645103406,1.04614843394259
+"window","Short steps",22,0.0563549331669371,1.03983522493197
+"window","Short steps",23,0.0282070263391973,1.01974400548196
+"window","Short steps",24,0.0730772515327865,1.05195810656215
+"window","Short steps",25,0.0509168590466551,1.03592306271517
+"window","Short steps",26,-0.00122068920678117,0.999154240574271
+"window","Long steps",1,0.449133205738299,1.36521976442052
+"window","Long steps",22,0.0166548453658923,1.01161115122603
+"window","Long steps",23,0.0139622659097077,1.00972488761587
+"window","Long steps",24,0.00973493145680437,1.0067705575846
+"window","Long steps",25,0.0198337393937588,1.01384263471918
+"window","Long steps",26,0.0112221467575906,1.00780893128461

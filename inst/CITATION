@@ -1,0 +1,9 @@
+citation(auto = meta)
+
+bibentry(bibtype = "Article",
+  title = paste("Behavioural state inference from movement and environmental",
+                "data using Markovian step selection functions"),
+  author = c(person("Ilhem", "Bouderbala"), person("Aurélien", "Nicosia"),
+             person("Daniel", "Fortin")),
+  journal = "PLOS ONE", year = "2026", volume = "21", number = "10",
+  pages = "e0360547", doi = "10.1371/journal.pone.0360547")

@@ -1,0 +1,50 @@
+url: https://aureliennicosiaulaval.github.io/behavSSF/
+development:
+  mode: unreleased
+  version_label: info
+  version_tooltip: Development preview
+template:
+  bootstrap: 5
+  bslib:
+    bg: "#fcfbf7"
+    fg: "#183345"
+    primary: "#146475"
+navbar:
+  structure:
+    left: [reference, articles, news]
+    right: [github]
+articles:
+- title: Worked examples
+  navbar: ~
+  contents:
+  - deer-restarts
+  - condor-taxonomies
+  - reference-workflow
+  - articles/elephant-lag-window
+reference:
+- title: Fit and assess models
+  contents:
+  - fit_ssf
+  - fit_guided_ssf
+  - ssf_taxonomy
+  - assess_taxonomy
+  - decode_states
+  - decode_ssf_diel
+  - movement_metrics
+- title: Prepare steps and evaluate kernels
+  contents:
+  - prepare_ssf_data
+  - prepare_ssf_steps
+  - generate_ssf_controls
+  - ssf_log_normalizer
+  - ssf_log_emissions
+  - angular_parameters
+  - convert_density_measure
+  - convert_movement_coefficients
+- title: Simulate and diagnose
+  contents:
+  - simulate_ssf
+  - movement_diagnostics
+  - diagnose_ssf_restarts
+  - compare_ssf_solutions
+  - plot_ssf_changes
