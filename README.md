@@ -1,6 +1,6 @@
 # behavSSF
 
-Development preview 0.1.0.9004. [Documentation and worked examples](https://aureliennicosiaulaval.github.io/behavSSF/).
+Development version 0.1.0.9006. [Documentation and worked examples](https://aureliennicosiaulaval.github.io/behavSSF/).
 
 `behavSSF` fits hidden Markov step selection models. You can use the behavioural rules from Bouderbala, Nicosia and Fortin (2026) or define your own state labels and rules. [PLOS ONE, e0360547](https://doi.org/10.1371/journal.pone.0360547)
 

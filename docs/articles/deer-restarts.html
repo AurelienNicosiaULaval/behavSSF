@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9004</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -225,7 +225,7 @@ steps in the second. The first fit gives a larger mean to its long-step
 state and assigns fewer steps to it. The label of any one step also
 depends on its turn and the sequence of nearby observations.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_changes.html">plot_ssf_changes</a></span><span class="op">(</span><span class="va">pair</span><span class="op">)</span> <span class="op">+</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">pair</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Relative east (km)"</span>, y <span class="op">=</span> <span class="st">"Relative north (km)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="deer-restarts_files/figure-html/full-map-1.png" class="r-plt" alt="Complete deer trajectory with orange endpoints on steps that change label between the two fits." width="100%"></p>
 <p>An orange dot marks the end of each step that switches. At this
@@ -242,7 +242,7 @@ first row.</p>
 <span><span class="op">)</span></span>
 <span><span class="va">strip</span><span class="op">$</span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">strip</span><span class="op">$</span><span class="va">fit</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Solution 2"</span>, <span class="st">"Solution 1"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">route</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_ssf_changes.html">plot_ssf_changes</a></span><span class="op">(</span><span class="va">pair</span>, segment <span class="op">=</span> <span class="va">longest</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="va">route</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">pair</span>, segment <span class="op">=</span> <span class="va">longest</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Longest uninterrupted segment"</span>,</span>
 <span>    x <span class="op">=</span> <span class="st">"Relative east (km)"</span>, y <span class="op">=</span> <span class="st">"Relative north (km)"</span><span class="op">)</span></span>
 <span><span class="va">labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">strip</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">step</span>, <span class="va">fit</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>

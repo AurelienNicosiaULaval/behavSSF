@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9004</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,9 +92,12 @@ step. This makes the target available before the zebra moves.</p>
 <span>  seed <span class="op">=</span> <span class="fl">1729</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">result</span></span>
-<span><span class="co">#&gt; Guided SSF: selected (T_F_R)</span></span>
-<span><span class="co">#&gt;   HDT_F_R: rejected; failed checks: target_positive</span></span>
-<span><span class="co">#&gt;   T_F_R: accepted</span></span></code></pre></div>
+<span><span class="co">#&gt; Guided HMM-SSF with 6377 observed steps</span></span>
+<span><span class="co">#&gt; Candidate taxonomies in the order tried</span></span>
+<span><span class="co">#&gt;   HDT_F_R (Habitat-directed travelling / Foraging / Resting) [Rejected]</span></span>
+<span><span class="co">#&gt;     The 95% confidence interval for the travelling state's target effect must</span></span>
+<span><span class="co">#&gt;     lie entirely above zero.</span></span>
+<span><span class="co">#&gt;   T_F_R (Travelling / Foraging / Resting) [Selected]</span></span></code></pre></div>
 <p>With the default taxonomy, the function first tries habitat-directed
 travelling (HDT), foraging and resting. The travelling state must have
 the longest mean step and more concentrated turns than the foraging
@@ -114,17 +117,14 @@ step, and the likelihood is integrated directly. In this fit the
 travelling state’s grassland interval includes zero, so the package
 selects travelling, foraging and resting.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">fit</span></span>
-<span><span class="va">labels</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">assessment</span><span class="op">$</span><span class="va">labels</span></span>
-<span><span class="va">zebra</span><span class="op">$</span><span class="va">state</span> <span class="op">&lt;-</span> <span class="va">labels</span><span class="op">[</span><span class="va">fit</span><span class="op">$</span><span class="va">state</span><span class="op">]</span></span>
-<span></span>
-<span><span class="va">state_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  State <span class="op">=</span> <span class="va">labels</span>,</span>
-<span>  Steps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tabulate.html" class="external-link">tabulate</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">state</span>, nbins <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">n_states</span><span class="op">)</span>,</span>
-<span>  `Mean step (m)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">1000</span> <span class="op">*</span> <span class="va">result</span><span class="op">$</span><span class="va">assessment</span><span class="op">$</span><span class="va">metrics</span><span class="op">$</span><span class="va">mean_step</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">overview</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<span><span class="va">states</span> <span class="op">&lt;-</span> <span class="va">overview</span><span class="op">$</span><span class="va">states</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  State <span class="op">=</span> <span class="va">states</span><span class="op">$</span><span class="va">state</span>,</span>
+<span>  Steps <span class="op">=</span> <span class="va">states</span><span class="op">$</span><span class="va">n_steps</span>,</span>
+<span>  `Mean step (m)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">1000</span> <span class="op">*</span> <span class="va">states</span><span class="op">$</span><span class="va">mean_step</span><span class="op">)</span>,</span>
 <span>  check.names <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">state_summary</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">State</th>
@@ -150,10 +150,9 @@ selects travelling, foraging and resting.</p>
 </tbody>
 </table>
 <p>The counts come from the Viterbi sequence, which assigns one label to
-each step. The means come from the fitted movement distributions. The
-labels are inferred from GPS movement. <code>fit$posterior</code> gives
-the probability of each state at each step, conditional on the fitted
-model. Its columns follow the order in <code>labels</code>.</p>
+each step. The means come from the fitted movement distributions.
+<code>overview$candidates</code> gives the outcome of each candidate
+that was tried.</p>
 </div>
 <div class="section level2">
 <h2 id="see-the-states-on-the-track">See the states on the track<a class="anchor" aria-label="anchor" href="#see-the-states-on-the-track"></a>
@@ -165,30 +164,16 @@ circle marks where the excerpt starts.</p>
 <span><span class="co">#&gt; Warning: package 'ggplot2' was built under R version 4.5.2</span></span>
 <span></span>
 <span><span class="va">longest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">zebra</span><span class="op">$</span><span class="va">ID</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">view</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">zebra</span><span class="op">[</span><span class="va">zebra</span><span class="op">$</span><span class="va">ID</span> <span class="op">==</span> <span class="va">longest</span>, <span class="op">]</span>, <span class="fl">96</span><span class="op">)</span></span>
-<span><span class="va">view</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">view</span><span class="op">$</span><span class="va">x</span> <span class="op">-</span> <span class="va">view</span><span class="op">$</span><span class="va">x0</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">view</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">view</span><span class="op">$</span><span class="va">y</span> <span class="op">-</span> <span class="va">view</span><span class="op">$</span><span class="va">y0</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">view</span><span class="op">$</span><span class="va">x0</span> <span class="op">&lt;-</span> <span class="va">view</span><span class="op">$</span><span class="va">x0</span> <span class="op">-</span> <span class="va">view</span><span class="op">$</span><span class="va">x0</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">view</span><span class="op">$</span><span class="va">y0</span> <span class="op">&lt;-</span> <span class="va">view</span><span class="op">$</span><span class="va">y0</span> <span class="op">-</span> <span class="va">view</span><span class="op">$</span><span class="va">y0</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">view</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html" class="external-link">geom_segment</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x0</span>, y <span class="op">=</span> <span class="va">y0</span>, xend <span class="op">=</span> <span class="va">x</span>, yend <span class="op">=</span> <span class="va">y</span>, colour <span class="op">=</span> <span class="va">state</span><span class="op">)</span>,</span>
-<span>               linewidth <span class="op">=</span> <span class="fl">1</span>, lineend <span class="op">=</span> <span class="st">"round"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">view</span>, <span class="va">state</span> <span class="op">==</span> <span class="st">"Resting"</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, colour <span class="op">=</span> <span class="va">state</span><span class="op">)</span>,</span>
-<span>             size <span class="op">=</span> <span class="fl">1.2</span>, show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">view</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">x0</span>, <span class="va">y0</span><span class="op">)</span>, shape <span class="op">=</span> <span class="fl">21</span>, fill <span class="op">=</span> <span class="st">"white"</span>,</span>
-<span>             size <span class="op">=</span> <span class="fl">3</span>, stroke <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Travelling <span class="op">=</span> <span class="st">"#166484"</span>, Foraging <span class="op">=</span> <span class="st">"#B6501C"</span>,</span>
-<span>                                 Resting <span class="op">=</span> <span class="st">"#784B8B"</span><span class="op">)</span>,</span>
-<span>                      breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Travelling"</span>, <span class="st">"Foraging"</span>, <span class="st">"Resting"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_equal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"track"</span>, segment <span class="op">=</span> <span class="va">longest</span>, step_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">96</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"48 hours on the zebra's track"</span>,</span>
-<span>       x <span class="op">=</span> <span class="st">"Relative easting (km)"</span>, y <span class="op">=</span> <span class="st">"Relative northing (km)"</span>, colour <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span>, panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>        plot.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"white"</span>, colour <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span>,</span>
-<span>        plot.title.position <span class="op">=</span> <span class="st">"plot"</span><span class="op">)</span></span></code></pre></div>
+<span>       x <span class="op">=</span> <span class="st">"Relative easting (km)"</span>, y <span class="op">=</span> <span class="st">"Relative northing (km)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zebra-hwange_files/figure-html/track-1.png" class="r-plt" alt="Map of 48 hours of the Hwange zebra track coloured by inferred state. An open circle marks the start." width="100%" style="display: block; margin: auto;"></p>
+<p>The probability plot shows how strongly the fitted model supports
+each state. When two curves are close, the model gives similar support
+to the two labels at that step.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"posterior"</span>, segment <span class="op">=</span> <span class="va">longest</span>, step_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">96</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zebra-hwange_files/figure-html/posterior-1.png" class="r-plt" alt="Smoothed probabilities of travelling, foraging and resting over the same 96 steps." width="100%" style="display: block; margin: auto;"></p>
 <p>The track and habitat raster come from the article’s <a href="https://doi.org/10.6084/m9.figshare.34077912.v2" class="external-link">Figshare
 supplement</a>. The original GPS data are also available in the <a href="https://doi.org/10.5281/zenodo.7872602" class="external-link">archive of Klappstein,
 Thomas and Michelot</a>.</p>

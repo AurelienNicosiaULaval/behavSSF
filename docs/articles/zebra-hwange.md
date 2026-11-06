@@ -28,9 +28,12 @@ result <- fit_guided_ssf(
   seed = 1729
 )
 result
-#> Guided SSF: selected (T_F_R)
-#>   HDT_F_R: rejected; failed checks: target_positive
-#>   T_F_R: accepted
+#> Guided HMM-SSF with 6377 observed steps
+#> Candidate taxonomies in the order tried
+#>   HDT_F_R (Habitat-directed travelling / Foraging / Resting) [Rejected]
+#>     The 95% confidence interval for the travelling state's target effect must
+#>     lie entirely above zero.
+#>   T_F_R (Travelling / Foraging / Resting) [Selected]
 ```
 
 With the default taxonomy, the function first tries habitat-directed
@@ -53,17 +56,14 @@ foraging and resting.
 
 ``` r
 
-fit <- result$fit
-labels <- result$assessment$labels
-zebra$state <- labels[fit$state]
-
-state_summary <- data.frame(
-  State = labels,
-  Steps = tabulate(fit$state, nbins = fit$n_states),
-  `Mean step (m)` = round(1000 * result$assessment$metrics$mean_step),
+overview <- summary(result)
+states <- overview$states
+knitr::kable(data.frame(
+  State = states$state,
+  Steps = states$n_steps,
+  `Mean step (m)` = round(1000 * states$mean_step),
   check.names = FALSE
-)
-knitr::kable(state_summary)
+))
 ```
 
 | State      | Steps | Mean step (m) |
@@ -73,12 +73,14 @@ knitr::kable(state_summary)
 | Resting    |  2910 |            37 |
 
 The counts come from the Viterbi sequence, which assigns one label to
-each step. The means come from the fitted movement distributions. The
-labels are inferred from GPS movement. `fit$posterior` gives the
-probability of each state at each step, conditional on the fitted model.
-Its columns follow the order in `labels`.
+each step. The means come from the fitted movement distributions.
+`overview$candidates` gives the outcome of each candidate that was
+tried.
 
 ## See the states on the track
+
+This map shows the first 48 hours of the longest segment. The open
+circle marks where the excerpt starts.
 
 ``` r
 
@@ -86,32 +88,26 @@ library(ggplot2)
 #> Warning: package 'ggplot2' was built under R version 4.5.2
 
 longest <- names(which.max(table(zebra$ID)))
-view <- head(zebra[zebra$ID == longest, ], 96)
-view$x <- view$x - view$x0[1]
-view$y <- view$y - view$y0[1]
-view$x0 <- view$x0 - view$x0[1]
-view$y0 <- view$y0 - view$y0[1]
-
-ggplot(view) +
-  geom_segment(aes(x = x0, y = y0, xend = x, yend = y, colour = state),
-               linewidth = 1, lineend = "round") +
-  geom_point(data = view[1, ], aes(x0, y0), shape = 21, fill = "white",
-             size = 3, stroke = 1) +
-  scale_colour_manual(values = c(Travelling = "#166484", Foraging = "#B6501C",
-                                 Resting = "#784B8B"),
-                      breaks = c("Travelling", "Foraging", "Resting")) +
-  coord_equal() +
+plot(result, type = "track", segment = longest, step_range = c(1, 96)) +
   labs(title = "48 hours on the zebra's track",
-       subtitle = "First two days of the longest segment. The circle marks the start.",
-       x = "Relative easting (km)", y = "Relative northing (km)", colour = NULL) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "bottom", panel.grid.minor = element_blank(),
-        plot.title.position = "plot")
+       x = "Relative easting (km)", y = "Relative northing (km)")
 ```
 
-![Map of 48 hours of the Hwange zebra track. Longer paths are coloured
-blue for travelling, shorter paths orange for foraging and purple for
-resting.](zebra-hwange_files/figure-html/track-1.png)
+![Map of 48 hours of the Hwange zebra track coloured by inferred state.
+An open circle marks the
+start.](zebra-hwange_files/figure-html/track-1.png)
+
+The probability plot shows how strongly the fitted model supports each
+state. When two curves are close, the model gives similar support to the
+two labels at that step.
+
+``` r
+
+plot(result, type = "posterior", segment = longest, step_range = c(1, 96))
+```
+
+![Smoothed probabilities of travelling, foraging and resting over the
+same 96 steps.](zebra-hwange_files/figure-html/posterior-1.png)
 
 The track and habitat raster come from the article’s [Figshare
 supplement](https://doi.org/10.6084/m9.figshare.34077912.v2). The

@@ -52,7 +52,7 @@ data <- data.frame(ID = 1L, stratum = rep(seq_len(n_steps), each = 2),
                    x = as.vector(rbind(chosen, 1 - chosen)))
 fit <- fit_ssf(data, ~ x, n_states = 1L, seed = 93)
 print(fit)
-#> Homogeneous HMM-SSF: 1 state(s), 20 observed steps
+#> Homogeneous HMM-SSF: 1 state(s), 20 observed steps in 1 segment(s)
 #> Log likelihood: -11.2467 | converged: TRUE | positive Hessian: TRUE
 c(estimate = coef(fit)[1, 1], reference = log(5 / 15))
 #>  estimate reference 
@@ -204,7 +204,7 @@ rejected.
 steps <- prepare_ssf_steps(observed, density_measure = "area")
 exact_model <- fit_ssf(steps, n_states = 1L, normalization = "exact", seed = 321)
 print(exact_model)
-#> Homogeneous HMM-SSF: 1 state(s), 80 observed steps
+#> Homogeneous HMM-SSF: 1 state(s), 80 observed steps in 1 segment(s)
 #> Log likelihood: -140.145 | converged: TRUE | positive Hessian: TRUE
 ssf_log_normalizer(coef(exact_model), convention = "area")
 #>              S1

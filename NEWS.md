@@ -1,5 +1,9 @@
 # behavSSF development version
 
+* Summarise fitted states and guided candidate decisions with `summary()`.
+  Use `plot()` to draw the track, inspect smoothed state probabilities, or
+  map steps that change labels between two restart solutions.
+
 * Add a first vignette that applies the published state rules to the Hwange
   zebra, with the grassland target chosen at the start of each step.
 

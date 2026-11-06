@@ -381,7 +381,7 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
 print.ssf_fit <- function(x, ...) {
   heading <- if (is.null(x$transition_coefficients)) "Homogeneous HMM-SSF:" else "Daily-transition HMM-SSF:"
   cat(heading, x$n_states, "state(s),",
-      nrow(x$observations), "observed steps\n")
+      nrow(x$observations), "observed steps in", length(unique(x$observations$ID)), "segment(s)\n")
   cat("Log likelihood:", format(x$log_likelihood),
       "| converged:", x$diagnostics$converged,
       "| positive Hessian:", x$diagnostics$hessian_positive, "\n")

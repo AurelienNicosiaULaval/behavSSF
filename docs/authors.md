@@ -18,14 +18,14 @@ Source:
 [`inst/CITATION`](https://github.com/AurelienNicosiaULaval/behavSSF/blob/HEAD/inst/CITATION)
 
 Nicosia A, Bouderbala I (2026). *behavSSF: Guided Behavioural State
-Assessment for Step Selection Models*. R package version 0.1.0.9004,
+Assessment for Step Selection Models*. R package version 0.1.0.9006,
 <https://aureliennicosiaulaval.github.io/behavSSF/>.
 
     @Manual{,
       title = {behavSSF: Guided Behavioural State Assessment for Step Selection Models},
       author = {Aurélien Nicosia and Ilhem Bouderbala},
       year = {2026},
-      note = {R package version 0.1.0.9004},
+      note = {R package version 0.1.0.9006},
       url = {https://aureliennicosiaulaval.github.io/behavSSF/},
     }
 

@@ -131,7 +131,7 @@ turn and the sequence of nearby observations.
 
 ``` r
 
-plot_ssf_changes(pair) +
+plot(pair) +
   labs(x = "Relative east (km)", y = "Relative north (km)")
 ```
 
@@ -154,7 +154,7 @@ strip <- rbind(
 )
 strip$fit <- factor(strip$fit, levels = c("Solution 2", "Solution 1"))
 
-route <- plot_ssf_changes(pair, segment = longest) +
+route <- plot(pair, segment = longest) +
   labs(title = "Longest uninterrupted segment",
     x = "Relative east (km)", y = "Relative north (km)")
 labels <- ggplot(strip, aes(step, fit)) +

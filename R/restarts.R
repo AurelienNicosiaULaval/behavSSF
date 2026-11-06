@@ -252,7 +252,8 @@ compare_ssf_solutions <- function(diagnostic, from = 1L, to = 2L) {
 
 #' Map steps whose state labels change between restart solutions
 #'
-#' @param comparison Output from [compare_ssf_solutions()].
+#' @param comparison,x Output from [compare_ssf_solutions()].
+#' @param ... Reserved for the generic.
 #' @param coords Four column names for start x, start y, end x and end y,
 #'   respectively. Use projected coordinates in common units.
 #' @param segment Optional segment identifiers from the `ID` column.
@@ -272,9 +273,7 @@ plot_ssf_changes <- function(comparison, coords = c("x0", "y0", "x", "y"), segme
       .stop("segment must identify fitted trajectory segments.")
     steps <- steps[steps$ID %in% segment, , drop = FALSE]
   }
-  if (!is.character(coords) || length(coords) != 4L || anyDuplicated(coords) ||
-      !all(coords %in% names(steps)) ||
-      !all(vapply(steps[coords], function(z) is.numeric(z) && all(is.finite(z)), logical(1))))
+  if (!.has_ssf_coordinates(steps, coords))
     .stop("coords must identify four finite numeric columns for step starts and ends.")
   track <- stats::setNames(steps[coords], c("x0", "y0", "x", "y"))
   track$status <- factor(ifelse(steps$.changed, "Changed", "Unchanged"),
@@ -297,6 +296,13 @@ plot_ssf_changes <- function(comparison, coords = c("x0", "y0", "x", "y"), segme
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(legend.position = "bottom", panel.grid.minor = ggplot2::element_blank(),
       text = ggplot2::element_text(colour = "#183345"))
+}
+
+#' @rdname plot_ssf_changes
+#' @export
+plot.ssf_solution_comparison <- function(x, ..., coords = c("x0", "y0", "x", "y"),
+                                         segment = NULL) {
+  plot_ssf_changes(x, coords = coords, segment = segment)
 }
 
 utils::globalVariables(".data")

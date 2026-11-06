@@ -49,7 +49,13 @@ ssf_taxonomy <- function(name, labels, formula = ~ step + log_step + cos_angle,
                  order_by = order_by, rules = rules), class = "ssf_taxonomy")
 }
 
-.reference_state_counts <- c(HDT_F_R = 3L, T_F_R = 3L, T_E = 2L, Other = 1L)
+.reference_state_labels <- list(
+  HDT_F_R = c("HDT", "Foraging", "Resting"),
+  T_F_R = c("Travelling", "Foraging", "Resting"),
+  T_E = c("Travelling", "Encamped"),
+  Other = "Other"
+)
+.reference_state_counts <- lengths(.reference_state_labels)
 
 .check_custom_taxonomy <- function(fit, taxonomy, metrics, occupancy, checks, min_mean_gap) {
   k <- fit$n_states

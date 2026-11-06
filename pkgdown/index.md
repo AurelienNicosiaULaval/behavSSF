@@ -5,7 +5,7 @@ you check how starting values affect the fitted states, give those states names
 using your own rules, and compare simulated tracks with the GPS data.
 
 This is a development preview. [Source code](https://github.com/AurelienNicosiaULaval/behavSSF) ·
-[Download the source package](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9004)
+[Download the source package](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9006)
 
 ## Start with a worked example
 

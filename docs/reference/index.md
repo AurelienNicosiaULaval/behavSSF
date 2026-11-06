@@ -16,6 +16,14 @@
   : Score and decode a fitted HMM-SSF with daily transitions
 - [`movement_metrics()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/movement_metrics.md)
   : Recover movement summaries under an explicit kernel convention
+- [`summary(`*`<ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
+  [`summary(`*`<guided_ssf>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
+  [`print(`*`<summary_ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
+  [`print(`*`<summary_guided_ssf>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
+  : Summarise an HMM-SSF fit
+- [`plot(`*`<ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot.ssf_fit.md)
+  [`plot(`*`<guided_ssf>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot.ssf_fit.md)
+  : Plot fitted behavioural states
 
 ## Prepare steps and evaluate kernels
 
@@ -49,4 +57,5 @@
 - [`compare_ssf_solutions()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_solutions.md)
   : Compare step labels between two restart solutions
 - [`plot_ssf_changes()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot_ssf_changes.md)
+  [`plot(`*`<ssf_solution_comparison>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot_ssf_changes.md)
   : Map steps whose state labels change between restart solutions

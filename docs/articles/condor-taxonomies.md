@@ -63,8 +63,9 @@ result <- fit_guided_ssf(
   n_starts = 8, short_iter = 100, long_iter = 900, seed = 1729
 )
 print(result)
-#> Guided SSF: selected (flight_modes)
-#>   flight_modes: accepted
+#> Guided HMM-SSF with 1304 observed steps
+#> Candidate taxonomies in the order tried
+#>   flight_modes (Circling-like flight / Directed flight) [Selected]
 result$history$flight_modes$assessment$checks
 #>           converged             hessian               score        valid_kernel 
 #>                TRUE                TRUE                TRUE                TRUE 

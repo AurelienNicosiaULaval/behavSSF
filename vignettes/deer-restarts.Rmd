@@ -119,7 +119,7 @@ head(changed, 4)
 On this track, `r nrow(changed)` of `r nrow(pair$steps)` steps change label between the two fits shown here. The switches go from Short steps in the first fit to Long steps in the second. The first fit gives a larger mean to its long-step state and assigns fewer steps to it. The label of any one step also depends on its turn and the sequence of nearby observations.
 
 ```{r full-map, fig.width=7, fig.height=6.1, out.width="100%", fig.alt="Complete deer trajectory with orange endpoints on steps that change label between the two fits."}
-plot_ssf_changes(pair) +
+plot(pair) +
   labs(x = "Relative east (km)", y = "Relative north (km)")
 ```
 
@@ -134,7 +134,7 @@ strip <- rbind(
 )
 strip$fit <- factor(strip$fit, levels = c("Solution 2", "Solution 1"))
 
-route <- plot_ssf_changes(pair, segment = longest) +
+route <- plot(pair, segment = longest) +
   labs(title = "Longest uninterrupted segment",
     x = "Relative east (km)", y = "Relative north (km)")
 labels <- ggplot(strip, aes(step, fit)) +

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9004</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,7 +114,7 @@ without relying on another optimizer.</p>
 <span>                   x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">chosen</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">chosen</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ssf.html">fit_ssf</a></span><span class="op">(</span><span class="va">data</span>, <span class="op">~</span> <span class="va">x</span>, n_states <span class="op">=</span> <span class="fl">1L</span>, seed <span class="op">=</span> <span class="fl">93</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Homogeneous HMM-SSF: 1 state(s), 20 observed steps</span></span>
+<span><span class="co">#&gt; Homogeneous HMM-SSF: 1 state(s), 20 observed steps in 1 segment(s)</span></span>
 <span><span class="co">#&gt; Log likelihood: -11.2467 | converged: TRUE | positive Hessian: TRUE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span>, reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">5</span> <span class="op">/</span> <span class="fl">15</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  estimate reference </span></span>
@@ -260,7 +260,7 @@ rejected.</p>
 <code class="sourceCode R"><span><span class="va">steps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_ssf_steps.html">prepare_ssf_steps</a></span><span class="op">(</span><span class="va">observed</span>, density_measure <span class="op">=</span> <span class="st">"area"</span><span class="op">)</span></span>
 <span><span class="va">exact_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ssf.html">fit_ssf</a></span><span class="op">(</span><span class="va">steps</span>, n_states <span class="op">=</span> <span class="fl">1L</span>, normalization <span class="op">=</span> <span class="st">"exact"</span>, seed <span class="op">=</span> <span class="fl">321</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">exact_model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Homogeneous HMM-SSF: 1 state(s), 80 observed steps</span></span>
+<span><span class="co">#&gt; Homogeneous HMM-SSF: 1 state(s), 80 observed steps in 1 segment(s)</span></span>
 <span><span class="co">#&gt; Log likelihood: -140.145 | converged: TRUE | positive Hessian: TRUE</span></span>
 <span><span class="fu"><a href="../reference/ssf_log_normalizer.html">ssf_log_normalizer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">exact_model</span><span class="op">)</span>, convention <span class="op">=</span> <span class="st">"area"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;              S1</span></span>

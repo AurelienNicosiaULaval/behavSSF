@@ -32,6 +32,8 @@ reference:
   - decode_states
   - decode_ssf_diel
   - movement_metrics
+  - summary.ssf_fit
+  - plot.ssf_fit
 - title: Prepare steps and evaluate kernels
   contents:
   - prepare_ssf_data

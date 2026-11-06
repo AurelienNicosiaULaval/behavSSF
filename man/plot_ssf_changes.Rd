@@ -2,17 +2,22 @@
 % Please edit documentation in R/restarts.R
 \name{plot_ssf_changes}
 \alias{plot_ssf_changes}
+\alias{plot.ssf_solution_comparison}
 \title{Map steps whose state labels change between restart solutions}
 \usage{
 plot_ssf_changes(comparison, coords = c("x0", "y0", "x", "y"), segment = NULL)
+
+\method{plot}{ssf_solution_comparison}(x, ..., coords = c("x0", "y0", "x", "y"), segment = NULL)
 }
 \arguments{
-\item{comparison}{Output from \code{\link[=compare_ssf_solutions]{compare_ssf_solutions()}}.}
+\item{comparison, x}{Output from \code{\link[=compare_ssf_solutions]{compare_ssf_solutions()}}.}
 
 \item{coords}{Four column names for start x, start y, end x and end y,
 respectively. Use projected coordinates in common units.}
 
 \item{segment}{Optional segment identifiers from the \code{ID} column.}
+
+\item{...}{Reserved for the generic.}
 }
 \value{
 A ggplot object. Every observed step is drawn as its own line.

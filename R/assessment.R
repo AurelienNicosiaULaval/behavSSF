@@ -118,10 +118,8 @@ assess_taxonomy <- function(fit, taxonomy, convention, target = "cos_diff_theta_
     checks <- c(checks, direction_order =
       m$concentration[travelling] > m$concentration[next_state] &&
         m$persistence[travelling] >= 0)
-    labels[order_mu] <- switch(taxonomy, HDT_F_R = c("HDT", "Foraging", "Resting"),
-                              T_F_R = c("Travelling", "Foraging", "Resting"),
-                              T_E = c("Travelling", "Encamped"))
-  } else labels <- "Other"
+    labels[order_mu] <- .reference_state_labels[[taxonomy]]
+  } else labels <- .reference_state_labels[[taxonomy]]
   if (!custom && taxonomy == "HDT_F_R") {
     target_positive <- FALSE
     if (target %in% rownames(fit$coefficients) && !is.null(fit$covariance)) {
@@ -258,14 +256,8 @@ fit_guided_ssf <- function(data, convention, target = NULL, n_starts = 5L,
 
 #' @export
 print.guided_ssf <- function(x, ...) {
-  cat("Guided SSF: ", x$status,
-      if (!is.null(x$taxonomy)) paste0(" (", x$taxonomy, ")"), "\n", sep = "")
-  for (name in names(x$history)) {
-    a <- x$history[[name]]
-    cat("  ", name, ": ", if (!is.null(a$error)) paste0("fit failed: ", a$error) else
-      if (a$assessment$accepted) "accepted" else
-        paste0("rejected; failed checks: ", paste(a$assessment$reasons, collapse = ", ")),
-      "\n", sep = "")
-  }
+  if (is.null(x$fit)) cat("Guided HMM-SSF. No candidate selected.\n") else
+    cat("Guided HMM-SSF with", nrow(x$fit$observations), "observed steps\n")
+  .print_guided_candidates(.guided_candidates(x))
   invisible(x)
 }

@@ -6,11 +6,14 @@ Map steps whose state labels change between restart solutions
 
 ``` r
 plot_ssf_changes(comparison, coords = c("x0", "y0", "x", "y"), segment = NULL)
+
+# S3 method for class 'ssf_solution_comparison'
+plot(x, ..., coords = c("x0", "y0", "x", "y"), segment = NULL)
 ```
 
 ## Arguments
 
-- comparison:
+- comparison, x:
 
   Output from
   [`compare_ssf_solutions()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_solutions.md).
@@ -23,6 +26,10 @@ plot_ssf_changes(comparison, coords = c("x0", "y0", "x", "y"), segment = NULL)
 - segment:
 
   Optional segment identifiers from the `ID` column.
+
+- ...:
+
+  Reserved for the generic.
 
 ## Value
 
