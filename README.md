@@ -1,45 +1,50 @@
-# behavSSF
+# behavSSF <a href="https://aureliennicosiaulaval.github.io/behavSSF/"><img src="man/figures/logo.svg" align="right" width="136" alt="behavSSF hex logo"></a>
 
-Development version 0.1.0.9006. [Documentation and worked examples](https://aureliennicosiaulaval.github.io/behavSSF/).
+[![R package checks](https://github.com/AurelienNicosiaULaval/behavSSF/actions/workflows/R-CMD-check.yaml/badge.svg?branch=main)](https://github.com/AurelienNicosiaULaval/behavSSF/actions/workflows/R-CMD-check.yaml) [![GitHub release](https://img.shields.io/github/v/release/AurelienNicosiaULaval/behavSSF?include_prereleases&sort=semver&label=GitHub&color=146475)](https://github.com/AurelienNicosiaULaval/behavSSF/releases) [![Documentation](https://img.shields.io/badge/docs-pkgdown-146475)](https://aureliennicosiaulaval.github.io/behavSSF/) [![GPL-3 licence](https://img.shields.io/badge/licence-GPL--3-526372)](LICENSE)
 
-`behavSSF` fits hidden Markov step selection models. You can use the behavioural rules from Bouderbala, Nicosia and Fortin (2026) or define your own state labels and rules. [PLOS ONE, e0360547](https://doi.org/10.1371/journal.pone.0360547)
-
-The package fits models with control steps or, for the kernels described below, with exact normalisation. With controls, it follows the article's convention. The denominator includes the case and divides the sum by the number of controls. The numerator is unweighted.
+Fit hidden Markov step-selection models and map the inferred behavioural states on an animal's GPS track. Use the state-labelling rules from [Bouderbala, Nicosia and Fortin (2026)](https://doi.org/10.1371/journal.pone.0360547) or define your own, then check how the labels depend on the fitted model.
 
 ## Installation
 
-Install from GitHub in R.
-
 ```r
-install.packages("remotes")
-remotes::install_github("AurelienNicosiaULaval/behavSSF")
-library(behavSSF)
+install.packages(c("remotes", "ggplot2"))
+remotes::install_github("AurelienNicosiaULaval/behavSSF", ref = "v0.1.0.9006")
 ```
 
-Installation requires an R-compatible C++ toolchain. The trajectory plots
-use `ggplot2`.
+Installation from source requires an R-compatible C++ toolchain. The [GitHub release](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9006) also provides a source archive with the rendered vignettes.
 
-Start with the [Hwange zebra vignette](https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-hwange.html)
-to apply the article's rules to the study data and map the fitted states.
+## Try it on the Hwange zebra
 
-Use `ssf_taxonomy()` to define labels, a ranking signature and checks for a
-candidate. See the [condor flight vignette](https://aureliennicosiaulaval.github.io/behavSSF/articles/condor-taxonomies.html) for
-an example on GPS data. In R, open it with
-`vignette("condor-taxonomies", package = "behavSSF")`.
+The package includes the prepared GPS steps from the article. This example fits the guided model, summarises the states and maps the first 48 hours of the longest segment.
 
-To see how much the labels depend on the starting values, run
-`diagnose_ssf_restarts()` with your data and taxonomy. The
-[red deer vignette](https://aureliennicosiaulaval.github.io/behavSSF/articles/deer-restarts.html) shows how to compare two
-solutions, find the steps that switch, and draw them on a map. Open it in R
-with `vignette("deer-restarts", package = "behavSSF")`.
+```r
+library(behavSSF)
 
-For an exact two-state model on hourly observations, pass the step-origin
-hours to `fit_ssf()` as `transition_hour`. Use `decode_ssf_diel()` for new data.
-Add `step_harmonics` to estimate an hourly curve for mean step length in each
-state. Add any of `lag22_log_step` through `lag26_log_step` alongside
-`lag_log_step` to include earlier lengths within the same segment.
-For simulation, include the first step’s origin hour in each segment’s
-`hour` column. See `?fit_ssf` and `?simulate_ssf` for the argument details.
+zebra <- readRDS(system.file("extdata", "hwange-zebra-steps.rds",
+                            package = "behavSSF"))
+zebra_steps <- prepare_ssf_steps(zebra, density_measure = "area",
+                               time = "time", expected_interval = 1800)
+zebra_fit <- fit_guided_ssf(
+  zebra_steps, convention = "area", target = "cos_diff_theta_to_target",
+  normalization = "exact", n_starts = 8, short_iter = 100, long_iter = 900,
+  seed = 1729
+)
+print(zebra_fit)
+summary(zebra_fit)$states
+longest <- names(which.max(table(zebra$ID)))
+plot(zebra_fit, segment = longest, step_range = c(1, 96))
+```
+
+## Worked examples
+
+- [Hwange zebra](https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-hwange.html).
+  Apply the article's rules and read the state labels and probabilities.
+- [Red deer](https://aureliennicosiaulaval.github.io/behavSSF/articles/deer-restarts.html).
+  Compare two fitted solutions and map the steps whose labels change.
+- [Andean condor](https://aureliennicosiaulaval.github.io/behavSSF/articles/condor-taxonomies.html).
+  Define your own taxonomy for flight states.
+- [African elephant](https://aureliennicosiaulaval.github.io/behavSSF/articles/elephant-lag-window.html).
+  Compare the observed daily movement cycle with simulated tracks.
 
 ## Exact normalisation without controls
 
@@ -78,7 +83,22 @@ coef(ar_fit)["lag_log_step", ]
 
 The exact likelihood normalises the gamma distribution at each step. The prospective target term can be added alongside length autoregression. Use `step_ar = TRUE` in `fit_guided_ssf()` to apply the extension to all candidate models. `simulate_ssf()` feeds back the previously generated length. At each segment boundary both the lag and the hidden-state process restart.
 
+## Daily movement patterns
+
+For exact two-state fits to hourly data, supply the step-origin hours through
+`transition_hour` in `fit_ssf()`. Use `step_harmonics` for a daily cycle in
+mean step length and add `lag22_log_step` through `lag26_log_step` alongside
+`lag_log_step` to use earlier lengths within the same segment.
+`decode_ssf_diel()` decodes new observations. For simulation, supply the
+first step's origin hour in the segment table's `hour` column. The
+[elephant example](https://aureliennicosiaulaval.github.io/behavSSF/articles/elephant-lag-window.html)
+shows how to compare daily movement patterns.
+
 ## Case-control input
+
+The package follows the article's convention for the case-control
+likelihood. The denominator includes the case and divides the sum by the
+number of controls. The numerator is unweighted.
 
 Required columns are `ID` (independent segment), `stratum` (choice set), `obs` (one case coded 1, controls coded 0), and `w` (strictly positive sampling density at every endpoint, including the case). The guided workflow also requires `step`, `log_step` and `cos_angle`. The constructor calculates the last two when positive `step` and finite `angle` in radians are supplied.
 
