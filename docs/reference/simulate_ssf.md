@@ -1,15 +1,17 @@
-# Simulate exact gamma-von Mises trajectories on independent segments
+# Simulate analytically normalised trajectories on independent segments
 
-Supports the movement terms step, log_step, cos_angle and an optional
-single cos-direction-to-target term. No finite control-point
-approximation is used for simulation. With a target effect, the nearest
-supplied fixed target is recomputed at the current position before each
-step. Movement is unbounded; neither the raster extent nor observed
-positions are imposed as barriers. With `lag_log_step`, the first step
-has no AR adjustment. Later steps use the previous simulated length
-within the same segment. Daily lags from 22 to 26 hours use earlier
-simulated lengths within the same segment. Hourly effects on the gamma
-mean apply from the first step.
+Supports the canonical gamma kernel and the step-length families of
+[`fit_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/fit_ssf.md).
+With an explicit family, use a fitted exact kernel, with optional
+persistence and a single prospective target direction. No finite
+control-point approximation is used for simulation. With a target
+effect, the nearest supplied fixed target is recomputed at the current
+position before each step. Movement is unbounded; neither the raster
+extent nor observed positions are imposed as barriers. With
+`lag_log_step`, the first step has no AR adjustment. Later steps use the
+previous simulated length within the same segment. Daily lags from 22 to
+26 hours use earlier simulated lengths within the same segment. Hourly
+effects on the gamma mean apply from the first step.
 
 ## Usage
 

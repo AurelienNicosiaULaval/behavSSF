@@ -45,10 +45,38 @@
   }, numeric(1))
 }
 
-.positive_ssf_hessian <- function(h) {
-  if (is.null(h) || any(!is.finite(h))) return(FALSE)
-  eig <- eigen((h + t(h)) / 2, symmetric = TRUE, only.values = TRUE)$values
-  min(eig) > 1e-8 * max(1, max(eig))
+# Diagonal equilibration makes the curvature screen invariant to changes
+# of units in individual parameters. Singular or indefinite curvature fails.
+.ssf_curvature <- function(h) {
+  failed <- list(positive = FALSE, min_eigenvalue = NA_real_,
+    max_eigenvalue = NA_real_, relative_min = NA_real_, condition = Inf)
+  if (is.null(h) || !is.matrix(h) || nrow(h) != ncol(h) ||
+      any(!is.finite(h)) || any(diag(h) <= 0)) return(failed)
+  scales <- sqrt(diag(h))
+  correlation <- (h + t(h)) / (2 * outer(scales, scales))
+  values <- eigen(correlation, symmetric = TRUE, only.values = TRUE)$values
+  relative <- min(values) / max(values)
+  list(positive = min(values) > 1e-8 * max(1, max(values)),
+    min_eigenvalue = min(values), max_eigenvalue = max(values),
+    relative_min = relative, condition = if (min(values) > 0) 1 / relative else Inf)
+}
+
+.positive_ssf_hessian <- function(h) .ssf_curvature(h)$positive
+
+.scaled_ssf_score <- function(working, hessian) {
+  if (is.null(hessian) || length(working) != nrow(hessian) ||
+      any(!is.finite(hessian)) || any(diag(hessian) <= 0))
+    return(rep(Inf, length(working)))
+  working / sqrt(diag(hessian))
+}
+
+.assessment_score <- function(fit) {
+  if (!is.null(fit$diagnostics$max_abs_scaled_gradient))
+    return(fit$diagnostics$max_abs_scaled_gradient)
+  if (!is.null(fit$diagnostics$working_score) && !is.null(fit$hessian))
+    return(max(abs(.scaled_ssf_score(fit$diagnostics$working_score, fit$hessian))))
+  # Backward compatibility for older objects that contain no working score.
+  fit$diagnostics$max_abs_gradient
 }
 
 .ssf_natural_score <- function(working, jacobian) {
@@ -59,15 +87,18 @@
 .refine_ssf_score <- function(fit, objective, jacobian_at) {
   working <- .ssf_working_score(fit$par, objective)
   score <- .ssf_natural_score(working, jacobian_at(fit$par))
+  scaled <- .scaled_ssf_score(working, fit$hessian)
   before <- max(abs(score))
+  scaled_before <- max(abs(scaled))
   steps <- 0L
-  # BFGS stops on relative changes in the objective. A long sequence can
-  # meet that criterion with a remaining score large enough to fail assessment.
   for (iteration in seq_len(3L)) {
-    largest <- max(abs(score))
-    if (fit$convergence != 0L || !is.finite(largest) || largest <= 1e-3 ||
+    largest <- max(abs(scaled))
+    if (fit$convergence != 0L || !is.finite(largest) || largest <= 1e-6 ||
         !.positive_ssf_hessian(fit$hessian)) break
-    direction <- solve((fit$hessian + t(fit$hessian)) / 2, working)
+    # Solve in equilibrated coordinates to avoid unit-dependent conditioning.
+    scale <- sqrt(diag(fit$hessian))
+    curvature <- (fit$hessian + t(fit$hessian)) / (2 * outer(scale, scale))
+    direction <- solve(curvature, working / scale) / scale
     roundoff <- 64 * .Machine$double.eps * max(1, abs(fit$value))
     accepted <- FALSE
     for (fraction in c(1, .5, .25, .125)) {
@@ -76,23 +107,25 @@
       value <- objective$fn(par)
       if (!is.finite(value) || value >= 1e99 || value > fit$value + roundoff) next
       trial_working <- .ssf_working_score(par, objective)
-      trial_score <- .ssf_natural_score(trial_working, jacobian_at(par))
-      if (any(!is.finite(trial_score)) || max(abs(trial_score)) >= largest) next
       hessian <- tryCatch(stats::optimHess(par, objective$fn, gr = objective$gr),
         error = function(e) NULL)
       if (!.positive_ssf_hessian(hessian)) next
+      trial_scaled <- .scaled_ssf_score(trial_working, hessian)
+      if (any(!is.finite(trial_scaled)) || max(abs(trial_scaled)) >= largest) next
       fit$par <- par
       fit$value <- value
       fit$hessian <- hessian
       working <- trial_working
-      score <- trial_score
+      scaled <- trial_scaled
+      score <- .ssf_natural_score(working, jacobian_at(par))
       steps <- steps + 1L
       accepted <- TRUE
       break
     }
     if (!accepted) break
   }
-  list(fit = fit, working = working, score = score, before = before, steps = steps)
+  list(fit = fit, working = working, score = score, scaled = scaled,
+    before = before, scaled_before = scaled_before, steps = steps)
 }
 
 #' Fit a hidden Markov step selection model
@@ -115,6 +148,10 @@
 #'   The absolute lag coefficients sum to less than one in each state.
 #' @param n_states Number of hidden states, between 1 and 6.
 #' @param n_starts Number of short runs. A one-state model uses one run.
+#'   The best short run is polished with the long budget. Use
+#'   [diagnose_ssf_restarts()] to polish starts independently and compare
+#'   distinct solutions. A successful local fit does not establish a global
+#'   maximum.
 #' @param short_iter,long_iter Maximum BFGS iterations for short and long phases.
 #' @param spread Positive standard deviation of initial perturbations. A scalar
 #'   or named vector with one entry for each SSF design column.
@@ -128,13 +165,23 @@
 #'   fit with the same transition harmonics in place of `transition`.
 #'   Supply `step_hour_coefficients` from a fit with the same length
 #'   harmonics to reuse those effects. They start at zero by default.
-#' @param normalization importance uses case-control data; exact requires
-#'   observed data from prepare_ssf_steps() and supports only the canonical
-#'   gamma-von Mises terms and optional prospective target direction.
-#'   Exact fitting optimises log rate and log shape to preserve positive gamma
-#'   parameters. AR coefficients use a hyperbolic tangent link. Spread applies
-#'   on the working scale. Reported coefficients,
-#'   covariance and score are on the natural coefficient scale.
+#' @param normalization Importance uses case-control data. Exact uses observed
+#'   data from [prepare_ssf_steps()] and analytically normalised movement and
+#'   direction terms on the full plane. The original gamma interface optimises
+#'   log rate and log shape and uses bounded AR coefficients. Spread applies on
+#'   the working scale. Reported coefficients, covariance and score are on
+#'   the natural coefficient scale.
+#' @param step_family Optional positive step-length distribution: `"gamma"`,
+#'   `"lognormal"`, `"inverse_gaussian"`, `"halfnormal"`, `"weibull"` or
+#'   `"exponential"`. With a family, the formula supplies angular and
+#'   endpoint selection terms only (default `~ cos_angle`, or `~ 1` for
+#'   uniform turns). Exact fits allow persistence and the canonical
+#'   prospective target, with homogeneous transitions on the full plane.
+#'   Endpoint selection uses importance normalisation. The parameters
+#'   named `step_*` in the coefficient matrix use the natural scale and
+#'   are independent of the density measure. The Weibull shape is estimated.
+#'   Positive parameters are optimised on the log scale. NULL uses the
+#'   original coefficient-form interface, including its gamma lag models.
 #' @param transition_hour Optional integer hour (0 to 23) at the beginning
 #'   of each step. Daily transitions require two states and exact fitting
 #'   on hourly observations. Supply hours in a consistent time zone.
@@ -159,20 +206,29 @@
 #'   Use [decode_ssf_diel()] to score new observations.
 #'   After BFGS converges, a local Newton correction can reduce the score when
 #'   the Hessian is positive definite. It accepts a correction when the
-#'   largest absolute score falls and the objective improves or agrees to
+#'   largest absolute curvature-scaled score falls and the objective improves or agrees to
 #'   rounding precision. The Hessian is recomputed at the retained solution. The
 #'   `score_refinement` diagnostic records the largest absolute score before
 #'   this step and the number of accepted corrections. The convergence code
 #'   and the original BFGS logs retain their optimiser meaning.
-#'   For exact fits the stored Hessian uses working log-rate/log-shape parameters;
-#'   covariance and score use the reported natural coefficient scale.
+#'   The stored Hessian uses working parameters. Covariance and score use
+#'   the reported natural coefficient scale. `scaled_score` divides the working
+#'   gradient by the square root of each observed-Hessian diagonal. The
+#'   acceptance screen uses its maximum absolute value (default 0.01).
+#'   Curvature is checked after diagonal equilibration, with relative minimum
+#'   eigenvalue above 1e-8. These diagnostics are invariant to diagonal linear
+#'   changes of parameter units, not arbitrary nonlinear reparameterisations.
 #' @export
 fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L,
                     n_starts = 5L, short_iter = 30L, long_iter = 300L,
                     spread = 0.5, seed = NULL, engine = c("native", "R"),
                     initial_values = NULL, normalization = c("importance", "exact"),
-                    transition_hour = NULL, transition_harmonics = 2L, step_harmonics = 0L) {
+                    transition_hour = NULL, transition_harmonics = 2L, step_harmonics = 0L,
+                    step_family = NULL) {
   user_call <- match.call()
+  family <- .step_family(step_family)
+  family_model <- !is.null(family)
+  if (family_model && missing(formula)) formula <- ~ cos_angle
   engine <- match.arg(engine)
   normalization <- match.arg(normalization)
   exact <- normalization == "exact"
@@ -180,10 +236,12 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
   .scalar(n_starts, "n_starts", 1, 10000, TRUE)
   .scalar(short_iter, "short_iter", 1, 1e6, TRUE)
   .scalar(long_iter, "long_iter", 1, 1e6, TRUE)
-  d <- if (exact) .design_exact(data, formula) else .design(data, formula)
+  d <- if (family_model) .family_design(data, formula, family, exact) else
+    if (exact) .design_exact(data, formula) else .design(data, formula)
   p <- ncol(d$X)
   k <- as.integer(n_states)
   diel <- !is.null(transition_hour)
+  if (family_model && diel) .stop("Step-family fits currently use homogeneous transitions.")
   daily_lags <- exact && length(d$lag_rows) > 0L
   if (daily_lags && !diel) .stop("Daily lag terms require transition_hour.")
   if (daily_lags && any(lengths(d$lag_rows) == 0L))
@@ -215,7 +273,8 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
     .stop("spread must contain strictly positive finite values.")
   spread <- rep(spread, length.out = p)
   unpack <- function(theta, kk) {
-    if (exact) theta <- .exact_transform(theta,d,kk)
+    if (family_model) theta <- .family_transform(theta, d, kk) else
+      if (exact) theta <- .exact_transform(theta, d, kk)
     if (!diel || kk == 1L) return(.unpack(theta, p, kk, colnames(d$X)))
     states <- paste0("S", 1:2)
     beta <- matrix(theta[seq_len(2L*p)], p, 2L, dimnames = list(colnames(d$X), states))
@@ -228,6 +287,7 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
     z
   }
   emissions <- function(z) {
+    if (family_model) return(.family_emissions(d, z$coefficients, exact))
     if (!exact) return(.emissions(d, z$coefficients))
     offset <- if (!is.null(z$step_hour_coefficients))
       d$diel$step_basis[d$diel$hour + 1L, , drop = FALSE] %*% z$step_hour_coefficients
@@ -235,8 +295,10 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
   }
   step_start <- numeric(2L*k*step_harmonics)
   objective_for <- function(kk) {
-    if (engine == "native") return(if (exact) .native_exact_objective(d,kk) else
-                                    .native_objective(d, kk))
+    if (engine == "native") {
+      if (family_model) return(.native_family_objective(d, kk, exact))
+      return(if (exact) .native_exact_objective(d, kk) else .native_objective(d, kk))
+    }
     fn <- function(theta) {
       z <- unpack(theta,kk)
       initial <- if (is.null(z$initial)) .stationary(z$transition) else z$initial
@@ -279,12 +341,16 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
         .stop("Initial step_hour_coefficients must match the daily length basis.")
     }
     supplied <- c(b, alpha, if (is.null(initial_step_hour)) step_start else c(initial_step_hour))
-    if (exact) supplied <- .exact_transform(supplied,d,k,inverse=TRUE)
+    if (family_model) supplied <- .family_transform(supplied, d, k, inverse = TRUE) else
+      if (exact) supplied <- .exact_transform(supplied, d, k, inverse = TRUE)
   }
   .with_seed(seed, function() {
     baseline_objective <- objective_for(1L)
     base_start <- rep(0,p)
-    if (exact) {
+    if (family_model) {
+      base_start[seq_along(.step_families[[family]])] <- .family_start(d$data$step[d$cases], family)
+      base_start <- .family_transform(base_start, d, 1L, inverse = TRUE)
+    } else if (exact) {
       mu <- mean(d$data$step)
       variance <- stats::var(d$data$step)
       shape <- if (is.finite(variance) && variance>0) max(.1,mu^2/variance) else 1
@@ -324,6 +390,7 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
     if (!retained) fit$hessian <- tryCatch(stats::optimHess(fit$par, objective$fn, gr = objective$gr),
                                            error = function(e) NULL)
     jacobian_at <- function(par) {
+      if (family_model) return(.family_jacobian(par, d, k))
       if (exact) .exact_jacobian(.exact_transform(par, d, k), d, k) else rep(1, length(par))
     }
     refinement <- .refine_ssf_score(fit, objective, jacobian_at)
@@ -335,8 +402,11 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
     score <- refinement$score
     h <- fit$hessian
     positive <- .positive_ssf_hessian(h)
-    covariance <- if (positive) solve(h) else NULL
-    if (positive && exact) {
+    covariance <- if (positive) {
+      scale <- sqrt(diag(h))
+      solve(h / outer(scale, scale)) / outer(scale, scale)
+    } else NULL
+    if (positive && (exact || family_model)) {
       jacobian <- jacobian_at(fit$par)
       covariance <- if (is.matrix(jacobian)) jacobian %*% covariance %*% t(jacobian) else
         covariance * outer(jacobian, jacobian)
@@ -352,21 +422,27 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
                   short_parameters = short$par, long_start = short$par,
                   objective_agreement = abs(fit$value + decode$log_likelihood),
                   score = score, max_abs_gradient = max(abs(score)),
+                  scaled_score = refinement$scaled,
+                  max_abs_scaled_gradient = max(abs(refinement$scaled)),
+                  score_scale = "working_gradient_over_sqrt_hessian_diagonal",
+                  curvature = .ssf_curvature(h),
                   working_score = refinement$working,
-                  score_refinement = list(before = refinement$before, steps = refinement$steps),
+                  score_refinement = list(before = refinement$before, scaled_before = refinement$scaled_before, steps = refinement$steps),
                   objective = if (!is.null(objective$diagnostics)) objective$diagnostics() else NULL),
                 starts = do.call(rbind, c(list(baseline$log),
                              lapply(attempts, `[[`, "log"), list(long$log))),
                 formula = formula, seed = seed, engine = engine,
                 density_measure = attr(d$data, "density_measure"),
-                normalization = normalization,
-                hessian_parameterization = if (daily_lags) "log_rate_log_shape_joint_ar" else
+                normalization = normalization, step_max = if (is.null(attr(d$data, "step_max"))) Inf else attr(d$data, "step_max"),
+                hessian_parameterization = if (family_model) "step_family_working" else
+                  if (daily_lags) "log_rate_log_shape_joint_ar" else
                   if (exact && .step_ar_term %in% colnames(d$X))
                   "log_rate_log_shape_atanh_ar" else if (exact) "log_rate_log_shape" else "natural",
                 covariance_parameterization = "natural",
                 approximation = if (exact) "analytic full-plane normalisation; no controls" else
                   "case included; unweighted numerator; denominator / J",
                 call = user_call)
+    if (family_model) out$step_family <- family
     if (diel) {
       out$transition_coefficients <- z$transition_coefficients
       out$initial <- z$initial
@@ -382,6 +458,7 @@ print.ssf_fit <- function(x, ...) {
   heading <- if (is.null(x$transition_coefficients)) "Homogeneous HMM-SSF:" else "Daily-transition HMM-SSF:"
   cat(heading, x$n_states, "state(s),",
       nrow(x$observations), "observed steps in", length(unique(x$observations$ID)), "segment(s)\n")
+  if (!is.null(x$step_family)) cat("Step-length family:", x$step_family, "\n")
   cat("Log likelihood:", format(x$log_likelihood),
       "| converged:", x$diagnostics$converged,
       "| positive Hessian:", x$diagnostics$hessian_positive, "\n")

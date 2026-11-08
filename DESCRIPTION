@@ -1,7 +1,7 @@
 Package: behavSSF
 Title: Guided Behavioural State Assessment for Step Selection Models
-Version: 0.1.0.9006
-Date: 2026-11-06
+Version: 0.1.0.9010
+Date: 2026-11-08
 Authors@R: c(
     person("Aurélien", "Nicosia", email = "aurelien.nicosia@mat.ulaval.ca",
            role = c("aut", "cre"),
@@ -17,13 +17,15 @@ Description: A development implementation of hidden Markov step selection
     hourly data, daily cycles in transitions and mean step length, as well as
     state-specific lag effects. Compatible gamma-von Mises kernels are
     normalised analytically and can include a prospective target effect.
+    An explicit step-family interface also supports log-normal, inverse
+    Gaussian, half-normal, Weibull and exponential lengths.
     An analytic-gradient engine and an R reference implementation are provided.
 URL: https://aureliennicosiaulaval.github.io/behavSSF/, https://github.com/AurelienNicosiaULaval/behavSSF
 BugReports: https://github.com/AurelienNicosiaULaval/behavSSF/issues
 License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
-Imports: stats
+Imports: stats, parallel
 Suggests: testthat (>= 3.0.0), knitr, rmarkdown, ggplot2, patchwork
 VignetteBuilder: knitr
 Config/testthat/edition: 3

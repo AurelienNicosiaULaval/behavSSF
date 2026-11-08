@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Reference calculations and explicit ecological assessment • behavSSF</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -20,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9006</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9010</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +39,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/zebra-hwange.html">Behavioural states of a Hwange zebra</a></li>
+    <li><a class="dropdown-item" href="../articles/zebra-state-count.html">Choose the number of states with your own taxonomy</a></li>
     <li><a class="dropdown-item" href="../articles/deer-restarts.html">When two fits label the same deer track differently</a></li>
     <li><a class="dropdown-item" href="../articles/condor-taxonomies.html">Configurable taxonomies for condor flight</a></li>
     <li><a class="dropdown-item" href="../articles/elephant-lag-window.html">Do nearby lags make the daily peak wider?</a></li>
@@ -56,8 +62,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Reference calculations and explicit ecological assessment</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Reference calculations and explicit ecological assessment</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/AurelienNicosiaULaval/behavSSF/blob/HEAD/vignettes/reference-workflow.Rmd" class="external-link"><code>vignettes/reference-workflow.Rmd</code></a></small>
@@ -297,6 +302,59 @@ score against finite differences of the R likelihood, including zero
 angular resultants.</p>
 <p>Simulation bands from these examples describe repeated tracks at the
 fitted parameters and the chosen model.</p>
+</div>
+<div class="section level2">
+<h2 id="check-the-numerical-fit-in-meaningful-units">Check the numerical fit in meaningful units<a class="anchor" aria-label="anchor" href="#check-the-numerical-fit-in-meaningful-units"></a>
+</h2>
+<p>The raw gradient depends on the parameter units. Assessment uses the
+working gradient divided by the square root of the corresponding
+observed-Hessian diagonal. Its maximum must be at most 0.01. The native
+Hessian uses numerical differences of the analytic gradient. Curvature
+is checked after dividing each Hessian entry by the square root of the
+two diagonal entries. The smallest eigenvalue must exceed 1e-8 times the
+larger of one and the largest eigenvalue. These checks survive diagonal
+linear changes of parameter units. They do not prove that the optimiser
+found the global maximum.</p>
+<p><code>fit$diagnostics$max_abs_scaled_gradient</code> reports the
+scaled score. <code>fit$diagnostics$max_abs_gradient</code> retains the
+raw natural-scale score. <code>fit$diagnostics$curvature</code> reports
+the scaled curvature. A small gradient with weak curvature calls for
+closer inspection, rather than an ecological label.</p>
+</div>
+<div class="section level2">
+<h2 id="declare-a-finite-availability-disk">Declare a finite availability disk<a class="anchor" aria-label="anchor" href="#declare-a-finite-availability-disk"></a>
+</h2>
+<p>For a canonical importance model, pass <code>step_max</code> when
+preparing the original case and control rows. Use the same units as
+<code>step</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">choices</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prepare_ssf_data.html">prepare_ssf_data</a></span><span class="op">(</span><span class="va">raw_choices</span>, density_measure <span class="op">=</span> <span class="st">"area"</span>, step_max <span class="op">=</span> <span class="fl">3.8</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_ssf.html">fit_ssf</a></span><span class="op">(</span><span class="va">choices</span>, <span class="op">~</span> <span class="va">step</span> <span class="op">+</span> <span class="va">log_step</span> <span class="op">+</span> <span class="va">cos_angle</span> <span class="op">+</span> <span class="va">canopy</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/movement_metrics.html">movement_metrics</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>, <span class="st">"area"</span>, step_max <span class="op">=</span> <span class="fl">3.8</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/assess_taxonomy.html">assess_taxonomy()</a></code> and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> read that
+support from the fit. A positive linear distance coefficient can be
+integrable on this disk. The package checks the behaviour near zero and
+uses the truncated radial mean for ordering. It holds habitat covariates
+constant when computing that mean. This is not a method for averaging
+movement over an arbitrary habitat polygon. Finite support is currently
+unavailable with explicit step families or exact normalisation.</p>
+</div>
+<div class="section level2">
+<h2 id="compare-state-coefficients-within-a-rule">Compare state coefficients within a rule<a class="anchor" aria-label="anchor" href="#compare-state-coefficients-within-a-rule"></a>
+</h2>
+<p>The rule receives labelled joint covariance as well as marginal
+standard errors. For example, this additional rule asks whether the
+usual 95% Wald interval for the persistence difference lies above
+zero:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lengths</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ssf_taxonomy.html">ssf_taxonomy</a></span><span class="op">(</span><span class="st">"lengths"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Short"</span>, <span class="st">"Long"</span><span class="op">)</span>,</span>
+<span>  rules <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>more_persistent <span class="op">=</span></span>
+<span>    <span class="fu"><a href="../reference/ssf_contrast.html">ssf_contrast</a></span><span class="op">(</span><span class="va">s</span>, <span class="st">"cos_angle"</span>, from <span class="op">=</span> <span class="st">"Short"</span>, to <span class="op">=</span> <span class="st">"Long"</span><span class="op">)</span><span class="op">$</span><span class="va">lower</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>The estimate is Long minus Short. Its variance includes the
+covariance between the two fitted coefficients. A missing covariance
+gives a missing interval, which fails the rule. This interval conditions
+on the fitted model. It does not adjust for trying several taxonomies,
+state counts or solutions.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

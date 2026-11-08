@@ -1,7 +1,9 @@
-#' Simulate exact gamma-von Mises trajectories on independent segments
+#' Simulate analytically normalised trajectories on independent segments
 #'
-#' Supports the movement terms step, log_step, cos_angle and an optional single
-#' cos-direction-to-target term. No finite control-point approximation is used
+#' Supports the canonical gamma kernel and the step-length families of
+#' [fit_ssf()]. With an explicit family, use a fitted exact kernel, with
+#' optional persistence and a single prospective target direction.
+#' No finite control-point approximation is used
 #' for simulation. With a target effect, the nearest supplied fixed target is
 #' recomputed at the current position before each step. Movement is unbounded;
 #' neither the raster extent nor observed positions are imposed as barriers.
@@ -39,11 +41,16 @@ simulate_ssf <- function(fit, segments, n_sims = 1L, target_points = NULL,
     .stop("Simulation requires an explicit fitted density measure.")
   b <- fit$coefficients
   if (any(target_term %in% c(.step_ar_term, .step_day_terms))) .stop("The AR coefficient cannot be a target term.")
-  allowed <- c("step", "log_step", "cos_angle", target_term, .step_ar_term, .step_day_terms)
+  family <- .step_family(fit$step_family)
+  family_parameters <- if (!is.null(family)) names(.step_families[[family]])
+  allowed <- if (is.null(family)) c("step", "log_step", "cos_angle", target_term,
+    .step_ar_term, .step_day_terms) else c(family_parameters, "cos_angle", target_term)
   if (!all(rownames(b) %in% allowed))
     .stop("Exact simulation does not support additional endpoint covariates.")
-  m <- movement_metrics(b, measure)
-  if (!all(m$valid)) .stop("All simulated gamma kernels must have positive shape and rate.")
+  if (!is.null(family) && !identical(fit$normalization, "exact"))
+    .stop("Simulation with step_family requires an exact fit.")
+  m <- movement_metrics(b, measure, family)
+  if (!all(m$valid)) .stop("All simulated movement kernels must be valid.")
   bias <- if (target_term %in% rownames(b)) b[target_term, ] else rep(0, ncol(b))
   rho <- rep(0, ncol(b))
   if (.step_ar_term %in% rownames(b)) {
@@ -84,8 +91,10 @@ simulate_ssf <- function(fit, segments, n_sims = 1L, target_points = NULL,
   }
   initial <- if (diel) fit$initial else .stationary(fit$transition)
   if (!diel) .check_hmm(matrix(0, 1, fit$n_states), fit$transition, 1, initial)
-  parameters <- as.matrix(data.frame(shape = m$shape, rate = m$rate,
-                                      persistence = m$persistence, target = bias, rho = rho))
+  radial <- if (is.null(family)) cbind(m$shape, m$rate) else t(b[family_parameters, , drop = FALSE])
+  if (ncol(radial) == 1L) radial <- cbind(radial, 0)
+  parameters <- cbind(radial, m$persistence, bias, rho)
+  family_id <- if (is.null(family)) 0L else match(family, names(.step_families))
   parameters <- cbind(parameters, rho_day)
   step_offset <- .diel_step_offsets(fit$step_hour_coefficients)
   if (!is.null(step_offset)) parameters <- cbind(parameters, t(step_offset))
@@ -94,7 +103,7 @@ simulate_ssf <- function(fit, segments, n_sims = 1L, target_points = NULL,
   storage.mode(starts) <- "double"
   .with_seed(seed, function() {
     matrices <- .Call(C_behavSSF_simulate, parameters, fit$transition, initial,
-                       starts, target_points, as.integer(n_sims), as.integer(state_path))
+                       starts, target_points, as.integer(n_sims), as.integer(state_path), family_id)
     tracks <- lapply(matrices, function(x) data.frame(
       ID = rep(segments$ID, segments$n_steps), index = sequence(segments$n_steps),
       x = x[,1], y = x[,2], step = x[,3], angle = x[,4], state = as.integer(x[,5])))

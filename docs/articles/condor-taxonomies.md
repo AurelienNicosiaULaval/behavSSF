@@ -22,6 +22,8 @@ al. (2025)](https://doi.org/10.1016/j.isci.2025.112090)
 
 library(behavSSF)
 library(ggplot2)
+theme_set(theme_ssf())
+knitr::opts_chunk$set(dev.args = list(bg = "white"))
 library(patchwork)
 library(stats)
 
@@ -117,15 +119,7 @@ probabilities conditional on the fitted model.
 
 palette <- c("Circling-like flight" = "#13726B", "Directed flight" = "#A54C24")
 ink <- "#183345"
-flight_theme <- theme_minimal(base_size = 12) +
-  theme(
-    text = element_text(colour = ink),
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_line(colour = "#E0E8E9", linewidth = .35),
-    plot.title = element_text(size = 13, margin = margin(b = 8)),
-    legend.position = "bottom",
-    plot.margin = margin(8, 12, 6, 8)
-  )
+flight_theme <- theme_ssf() + theme(legend.position = "bottom")
 longest <- names(which.max(table(gps$ID)))
 i <- which(gps$ID == longest)
 track <- gps[i, ]
@@ -170,13 +164,7 @@ panels + plot_annotation(
   title = "The same flight in space and altitude",
   subtitle = paste("Kuzco ·", nrow(track), "five-second steps ·", track$day[1]),
   caption = "GPS data from Keskin et al. (2024), Zenodo 12607008",
-  theme = theme(
-    plot.background = element_rect(fill = "white", colour = NA),
-    plot.title = element_text(size = 20, colour = ink, margin = margin(b = 7)),
-    plot.subtitle = element_text(size = 11, colour = "#146475", margin = margin(b = 9)),
-    plot.caption = element_text(size = 9, colour = "#4D646C", hjust = 0),
-    plot.margin = margin(15, 13, 10, 13)
-  )
+  theme = theme_ssf()
 )
 ```
 

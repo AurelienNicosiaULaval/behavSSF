@@ -5,7 +5,10 @@ description: Compare the height and width of the daily correlation peak on the s
 ---
 
 ```{r setup, include=FALSE}
+library(behavSSF)
 library(ggplot2)
+theme_set(theme_ssf())
+knitr::opts_chunk$set(dev.args = list(bg = "white"))
 library(patchwork)
 
 knitr::opts_chunk$set(echo = FALSE, fig.align = "center", out.width = "100%",
@@ -27,17 +30,9 @@ height <- metric("peak_height")
 width <- metric("peak_width")
 stopifnot(identical(at24$model, c("current", "window")))
 
-theme_track <- theme_minimal(base_size = 13) +
-  theme(text = element_text(colour = ink), axis.text = element_text(colour = muted),
-    panel.grid.minor = element_blank(), panel.grid.major = element_line(colour = "#E4ECEE"),
-    plot.title = element_text(colour = ink, face = "plain", size = 19, margin = margin(b = 6)),
-    plot.subtitle = element_text(colour = muted, margin = margin(b = 9)),
-    plot.caption = element_text(colour = muted, hjust = 0, margin = margin(t = 9)),
-    plot.title.position = "plot", plot.caption.position = "plot",
-    plot.margin = margin(10, 15, 8, 12), panel.spacing = grid::unit(1.5, "lines"),
-    strip.text = element_text(colour = ink, size = 13, margin = margin(b = 7)),
-    legend.position = "bottom")
-panel <- theme_track + theme(plot.title = element_text(size = 15))
+theme_track <- theme_ssf() + theme(legend.position = "bottom",
+  panel.spacing = grid::unit(1.5, "lines"))
+panel <- theme_track
 series <- scale_colour_manual(values = colours, breaks = names(models), labels = unname(models), name = NULL)
 fills <- scale_fill_manual(values = colours, guide = "none")
 ```
@@ -53,8 +48,6 @@ observed <- unique(acf[c("lag", "observed")])
 
 plot_acf <- function(a, o, focus = FALSE) {
   g <- ggplot(a, aes(lag, median, colour = model))
-  if (focus) g <- g + annotate("rect", xmin = 22, xmax = 26, ymin = -Inf,
-    ymax = Inf, fill = "#EAF1F0", alpha = .7)
   g + geom_vline(xintercept = if (focus) 24 else c(24, 48), linetype = "dashed",
       colour = "#B7C7CE", linewidth = .65) +
     geom_hline(yintercept = 0, colour = "#CCD8DC", linewidth = .55) +

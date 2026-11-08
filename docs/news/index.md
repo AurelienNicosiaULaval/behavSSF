@@ -1,5 +1,92 @@
 # Changelog
 
+## behavSSF 0.1.0.9010
+
+- Use a shared white theme for package plots and worked examples with
+  [`theme_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/theme_ssf.md).
+- Reject reordered or damaged prepared choice sets before evaluating a
+  likelihood.
+- Check that custom taxonomy formula terms occur in the fitted model and
+  give context when a rule fails.
+- Complete the provenance notes for the Hwange zebra and the red deer.
+- Explain local optima, proposal-density conventions and limits of the
+  numerical screen.
+
+## behavSSF 0.1.0.9009
+
+- Assess canonical importance kernels on a common availability disk with
+  `step_max`. Positive linear distance coefficients can be valid on this
+  bounded support; ordering and summaries use the corresponding
+  truncated moments.
+- Screen stationarity and curvature after diagonal scaling. Raw
+  gradients remain available. The new diagnostics do not depend on
+  diagonal linear changes of parameter units.
+- Pass labelled joint coefficient covariance to taxonomy rules. Use
+  [`ssf_contrast()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_contrast.md)
+  for coefficient estimates and between-state contrasts with Wald
+  intervals.
+- Retain rejected fitted restart models for later reassessment with
+  `keep_rejected = TRUE`. Grouping still concerns admissible solutions
+  only.
+- Keep movement profiles and coefficients for every successful
+  state-comparison start, including rejected starts, for direct
+  stability checks.
+- Report a concise assessment and expose scaled gradients in fit
+  summaries.
+
+## behavSSF 0.1.0.9008
+
+- Compare custom state taxonomies and length families on common held-out
+  blocks with
+  [`compare_ssf_states()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_states.md).
+- Keep complete segments together with
+  [`ssf_blocks()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_blocks.md).
+  Each start is fitted on training rows only, and incomplete block
+  coverage has no pooled score.
+- Report numerical checks, full-data taxonomy checks and predictive
+  scores separately, retaining every start and failure. Scores allowing
+  Hessian failures are an explicit separate sensitivity analysis.
+- Map label changes across different state counts with
+  [`compare_ssf_state_labels()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_state_labels.md)
+  and [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+  separating changed parent labels from low smoothed assignment support.
+- Add a zebra vignette with common controls, gamma and Weibull fits,
+  held-out scores, trajectory maps and an environmental taxonomy rule.
+
+## behavSSF 0.1.0.9007
+
+- Choose gamma, log-normal, inverse Gaussian, half-normal, Weibull or
+  exponential step lengths with `step_family`. Fit analytic movement
+  kernels or use matched controls for endpoint selection. The same
+  taxonomy can label states by their fitted mean length across families.
+
+- Summarise fitted states and guided candidate decisions with
+  [`summary()`](https://rdrr.io/r/base/summary.html). Use
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) to draw the
+  track, inspect smoothed state probabilities, or map steps that change
+  labels between two restart solutions.
+
+- Add a first vignette that applies the published state rules to the
+  Hwange zebra, with the grassland target chosen at the start of each
+  step.
+
+- Fit combinations of lags from 22 to 26 hours in exact hourly models.
+  The likelihood and simulator use each lag only within its segment.
+
+- Add `lag24_log_step` alongside `lag_log_step` to exact hourly fits,
+  with segment-aware likelihoods and forward simulation.
+
+- Use `step_harmonics` to model the hourly mean of the gamma step length
+  separately in each state, alongside daily transitions and optional
+  AR(1).
+
+- Fit exact two-state models with daily transition probabilities using
+  `transition_hour` in
+  [`fit_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/fit_ssf.md).
+  Apply the same hourly schedule in
+  [`decode_ssf_diel()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/decode_ssf_diel.md)
+  and forward simulations.
+
 ## behavSSF 0.1.0
 
 - Refine the score after BFGS when the Hessian supports a local

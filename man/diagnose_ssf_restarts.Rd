@@ -20,7 +20,9 @@ diagnose_ssf_restarts(
   assessment_args = list(),
   likelihood_tol = 1e-05,
   parameter_tol = 0.001,
-  objective_tol = 1e-07
+  objective_tol = 1e-07,
+  step_family = NULL,
+  keep_rejected = FALSE
 )
 }
 \arguments{
@@ -59,6 +61,12 @@ log likelihood and aligned working parameters.}
 
 \item{objective_tol}{Maximum allowed difference between the optimiser
 and forward log likelihood.}
+
+\item{step_family}{Optional length family passed to \code{\link[=fit_ssf]{fit_ssf()}}.}
+
+\item{keep_rejected}{Retain each successful optimisation in \code{all_fits},
+including taxonomically rejected fits, for reassessment without refitting.
+Errors remain NULL. Default FALSE limits memory use.}
 }
 \value{
 An \code{ssf_restarts} object with \code{solutions} ranked by likelihood,

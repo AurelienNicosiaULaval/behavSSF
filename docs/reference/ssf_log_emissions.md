@@ -15,7 +15,8 @@ ssf_log_emissions(
   data,
   formula,
   coefficients,
-  normalization = c("importance", "exact")
+  normalization = c("importance", "exact"),
+  step_family = NULL
 )
 ```
 
@@ -42,6 +43,12 @@ ssf_log_emissions(
 
   importance uses the published approximation; exact uses observed
   ssf_steps and the analytic canonical-kernel normaliser.
+
+- step_family:
+
+  Optional length family, as in
+  [`fit_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/fit_ssf.md).
+  Coefficients use the named natural parameters returned by that fit.
 
 ## Value
 

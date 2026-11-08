@@ -29,16 +29,24 @@
 #' first appearance in the input; rows are reordered within strata to put the
 #' case first. If time is supplied, case times must increase within each segment.
 #' No incomplete stratum or nonfinite value is silently removed.
+#' If you rearrange rows after preparation, prepare the original data again
+#' before fitting. Prepared choice sets must remain contiguous and case-first.
 #'
 #' @param data A data frame of observed and control steps.
 #' @param id,stratum,observed,weight Names of the segment, choice set,
-#'   binary observation, and positive sampling density columns.
+#'   binary observation, and positive sampling density columns. Weights may
+#'   be proportional to the conditioned proposal within a choice set when
+#'   interpreting conditional choice probabilities. Absolute emission densities
+#'   require the correctly normalised proposal on the availability domain.
 #' @param time Optional name of a numeric or POSIXct observation time column.
 #' @param density_measure Measure of the supplied sampling density: `"area"`,
-#'   `"step_angle"`, or `"unspecified"`. This annotation does not alter weights.
+#'   `"step_angle"`, or `"unspecified"`. This annotation records the convention; it does not alter or verify weights.
 #' @param expected_interval Optional positive interval between consecutive
 #'   cases within a segment. Requires time. Units are seconds for POSIXct,
 #'   otherwise the units of the numeric time column. Gaps cause an error.
+#' @param step_max Upper radial support in step-length units, or Inf for
+#'   unbounded support. Declare the radius of a common availability disk here.
+#'   Finite support currently uses the canonical importance kernel.
 #' @return A validated data frame of class `ssf_data`, with standard columns
 #'   `ID`, `stratum`, `obs`, and `w`, and a `.source_row` mapping.
 #' @export
@@ -49,7 +57,9 @@
 prepare_ssf_data <- function(data, id = "ID", stratum = "stratum",
                              observed = "obs", weight = "w", time = NULL,
                              density_measure = c("unspecified", "area", "step_angle"),
-                             expected_interval = NULL) {
+                             expected_interval = NULL, step_max = Inf) {
+  if (!is.numeric(step_max) || length(step_max) != 1L || is.na(step_max) ||
+      step_max <= 0 || step_max == -Inf) .stop("step_max must be positive or Inf.")
   density_measure <- match.arg(density_measure)
   if (!is.null(expected_interval)) {
     .scalar(expected_interval, "expected_interval", .Machine$double.eps)
@@ -118,6 +128,10 @@ prepare_ssf_data <- function(data, id = "ID", stratum = "stratum",
       .stop("angle must be finite numeric radians.")
     out$cos_angle <- cos(out$angle)
   }
+  if (is.finite(step_max) && (!"step" %in% names(out) ||
+      any(!is.finite(out$step) | out$step <= 0 | out$step > step_max)))
+    .stop("A finite step_max requires every case and control step in (0, step_max].")
+  attr(out, "step_max") <- step_max
   class(out) <- c("ssf_data", "data.frame")
   attr(out, "density_measure") <- density_measure
   out
@@ -180,21 +194,38 @@ convert_movement_coefficients <- function(coefficients, from, to) {
   b
 }
 
-.design <- function(data, formula) {
+.design <- function(data, formula, allow_empty = FALSE) {
   if (!inherits(data, "ssf_data")) data <- prepare_ssf_data(data)
   if (!inherits(formula, "formula") || length(formula) != 2L)
     .stop("formula must be one-sided, for example ~ step + log_step + cos_angle.")
   mm <- stats::model.matrix(formula, data = stats::model.frame(
     formula, data = data, na.action = stats::na.pass))
   mm <- mm[, colnames(mm) != "(Intercept)", drop = FALSE]
-  if (!ncol(mm) || nrow(mm) != nrow(data) || any(!is.finite(mm)))
+  if ((!allow_empty && !ncol(mm)) || nrow(mm) != nrow(data) || any(!is.finite(mm)))
     .stop("The SSF design must have finite covariates and at least one column.")
   groups <- split(seq_len(nrow(data)), data$stratum)
-  centered <- mm
-  for (i in groups) centered[i, ] <- sweep(mm[i, , drop = FALSE], 2,
-                                            colMeans(mm[i, , drop = FALSE]))
-  if (qr(centered)$rank < ncol(mm))
-    .stop("SSF coefficients are not identifiable within choice sets.")
+  if (anyNA(data$stratum) || anyNA(data$ID) || anyNA(data$obs) ||
+      any(!data$obs %in% 0:1) || any(lengths(groups) < 2L) ||
+      any(vapply(groups, function(i) sum(data$obs[i]), numeric(1)) != 1))
+    .stop("Every prepared choice set must contain one case and at least one control.")
+  first <- vapply(groups, `[`, integer(1), 1L)
+  if (any(data$obs[first] != 1L))
+    .stop("The case must be the first row of every choice set; re-run prepare_ssf_data() on the original data.")
+  if (!identical(unlist(groups, use.names = FALSE), seq_len(nrow(data))))
+    .stop("Prepared choice sets must be contiguous and in their prepared order; re-run prepare_ssf_data() on the original data.")
+  if (any(vapply(groups, function(i) length(unique(data$ID[i])) != 1L, logical(1))))
+    .stop("A prepared choice set cannot span several segments.")
+  if (!is.numeric(data$w) || any(!is.finite(data$w) | data$w <= 0))
+    .stop("Sampling densities must be finite and strictly positive.")
+  if (anyDuplicated(rle(as.character(data$ID[first]))$values))
+    .stop("Each segment must occur in one contiguous block of choice sets.")
+  if (ncol(mm)) {
+    centered <- mm
+    for (i in groups) centered[i, ] <- sweep(mm[i, , drop = FALSE], 2,
+                                              colMeans(mm[i, , drop = FALSE]))
+    if (qr(centered)$rank < ncol(mm))
+      .stop("SSF coefficients are not identifiable within choice sets.")
+  }
   cases <- which(data$obs == 1L)
   list(data = data, X = mm, groups = groups, cases = cases,
        logw = log(data$w), segment = data$ID[cases])

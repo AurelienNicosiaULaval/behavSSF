@@ -35,6 +35,10 @@
 #'   [assess_taxonomy()], for example `list(min_occupancy = 0.10)`.
 #' @param likelihood_tol,parameter_tol Absolute grouping tolerances for
 #'   log likelihood and aligned working parameters.
+#' @param keep_rejected Retain each successful optimisation in `all_fits`,
+#'   including taxonomically rejected fits, for reassessment without refitting.
+#'   Errors remain NULL. Default FALSE limits memory use.
+#' @param step_family Optional length family passed to [fit_ssf()].
 #' @param objective_tol Maximum allowed difference between the optimiser
 #'   and forward log likelihood.
 #' @return An `ssf_restarts` object with `solutions` ranked by likelihood,
@@ -58,7 +62,10 @@ diagnose_ssf_restarts <- function(data, taxonomy, n_starts = 30L, seed = NULL,
                                   starts = NULL, formula = NULL,
                                   target = "cos_diff_theta_to_target", assessment_args = list(),
                                   likelihood_tol = 1e-5, parameter_tol = 1e-3,
-                                  objective_tol = 1e-7) {
+                                  objective_tol = 1e-7, step_family = NULL, keep_rejected = FALSE) {
+  if (!is.logical(keep_rejected) || length(keep_rejected) != 1L || is.na(keep_rejected))
+    .stop("keep_rejected must be TRUE or FALSE.")
+  family <- .step_family(step_family)
   engine <- match.arg(engine)
   normalization <- match.arg(normalization, c("exact", "importance"))
   custom <- inherits(taxonomy, "ssf_taxonomy")
@@ -71,17 +78,15 @@ diagnose_ssf_restarts <- function(data, taxonomy, n_starts = 30L, seed = NULL,
   .scalar(parameter_tol, "parameter_tol", 0)
   .scalar(objective_tol, "objective_tol", 0)
   if (is.null(formula)) {
-    terms <- c("step", "log_step", "cos_angle")
-    formula <- if (custom) taxonomy$formula else stats::reformulate(
+    terms <- if (is.null(family)) c("step", "log_step", "cos_angle") else "cos_angle"
+    formula <- if (custom) .taxonomy_formula(taxonomy, family) else stats::reformulate(
       c(terms, if (taxonomy == "HDT_F_R") target))
   }
   exact <- normalization == "exact"
-  design <- if (exact) .design_exact(data, formula) else .design(data, formula)
+  design <- .taxonomy_design(data, formula, family, exact)
   convention <- attr(design$data, "density_measure")
   if (length(convention) != 1L || !convention %in% c("area", "step_angle"))
     .stop("Declare the sampling density measure before diagnosing restarts.")
-  if (!all(c("step", "log_step", "cos_angle") %in% colnames(design$X)))
-    .stop("The fitted design must include step, log_step, and cos_angle.")
   if (!custom && taxonomy == "HDT_F_R" &&
       (length(target) != 1L || !target %in% colnames(design$X)))
     .stop("The HDT taxonomy requires a target coefficient in the fitted design.")
@@ -108,7 +113,7 @@ diagnose_ssf_restarts <- function(data, taxonomy, n_starts = 30L, seed = NULL,
         short_iter = short_iter, long_iter = long_iter,
         spread = if (is.null(start$spread)) spread else start$spread,
         seed = start$seed, engine = engine, initial_values = start$initial_values,
-        normalization = normalization),
+        normalization = normalization, step_family = family),
       error = identity
     )
     if (inherits(fit, "error"))
@@ -120,12 +125,19 @@ diagnose_ssf_restarts <- function(data, taxonomy, n_starts = 30L, seed = NULL,
     if (!isTRUE(fit$diagnostics$objective_agreement <= objective_tol))
       reason <- c(reason, "objective_agreement")
     attempt <- list(log_likelihood = fit$log_likelihood, reason = reason, log = fit$starts)
-    if (length(reason)) return(attempt)
+    if (length(reason)) {
+      if (keep_rejected) {
+        attempt$rejected_fit <- fit
+        attempt$rejected_assessment <- assessment
+      }
+      return(attempt)
+    }
 
     labels <- assessment$labels
     label_order <- if (custom) match(taxonomy$labels, labels) else order(labels, method = "radix")
     coefficients <- c(fit$coefficients[, label_order, drop = FALSE])
-    if (exact) coefficients <- .exact_transform(coefficients, design, k, inverse = TRUE)
+    if (!is.null(family)) coefficients <- .family_transform(coefficients, design, k, inverse = TRUE) else
+      if (exact) coefficients <- .exact_transform(coefficients, design, k, inverse = TRUE)
     transition <- fit$transition[label_order, label_order, drop = FALSE]
     # Default admissibility bounds exclude degenerate self-transition. A
     # zero off-diagonal entry can still occur with three or more states.
@@ -189,6 +201,10 @@ diagnose_ssf_restarts <- function(data, taxonomy, n_starts = 30L, seed = NULL,
     attempts = lapply(attempts, `[[`, "log"),
     fits = lapply(attempts[representatives], `[[`, "fit"),
     assessments = lapply(attempts[representatives], `[[`, "assessment"),
+    all_fits = if (keep_rejected) lapply(attempts, function(a)
+      if (!is.null(a$fit)) a$fit else a$rejected_fit) else NULL,
+    all_assessments = if (keep_rejected) lapply(attempts, function(a)
+      if (!is.null(a$assessment)) a$assessment else a$rejected_assessment) else NULL,
     taxonomy = taxonomy_name
   ), class = "ssf_restarts")
 }
@@ -293,9 +309,7 @@ plot_ssf_changes <- function(comparison, coords = c("x0", "y0", "x", "y"), segme
       subtitle = sprintf("Solution %d to %d  |  %d of %d steps relabelled",
         comparison$from, comparison$to, sum(steps$.changed), nrow(steps)),
       x = "Easting", y = "Northing") +
-    ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(legend.position = "bottom", panel.grid.minor = ggplot2::element_blank(),
-      text = ggplot2::element_text(colour = "#183345"))
+    theme_ssf() + ggplot2::theme(legend.position = "bottom")
 }
 
 #' @rdname plot_ssf_changes

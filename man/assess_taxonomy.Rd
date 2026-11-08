@@ -2,6 +2,7 @@
 % Please edit documentation in R/assessment.R
 \name{assess_taxonomy}
 \alias{assess_taxonomy}
+\alias{print.ssf_assessment}
 \title{Assess a fitted ecological taxonomy}
 \usage{
 assess_taxonomy(
@@ -14,6 +15,8 @@ assess_taxonomy(
   min_mean_gap = 0,
   score_tolerance = 0.01
 )
+
+\method{print}{ssf_assessment}(x, ...)
 }
 \arguments{
 \item{fit}{An \code{ssf_fit} object.}
@@ -33,8 +36,12 @@ For daily transitions, the bounds apply at each of the 24 hours.}
 \item{min_mean_gap}{Nonnegative minimum absolute gap between ordered means,
 in step-length units. This is not a significance test.}
 
-\item{score_tolerance}{Maximum absolute objective gradient for accepting a
+\item{score_tolerance}{Maximum absolute curvature-scaled objective gradient for accepting a
 numerically stationary fit. Missing or nonfinite scores fail this check.}
+
+\item{x}{An assessment returned by \code{assess_taxonomy()}.}
+
+\item{...}{Reserved for S3 methods.}
 }
 \value{
 A list with \code{accepted}, named logical \code{checks}, state \code{labels},
@@ -47,4 +54,8 @@ foraging (or encamped). For HDT, the unadjusted 95 percent Wald interval of
 the target coefficient must be entirely positive. A significantly negative
 target coefficient does not establish attraction. Numerical failure and
 failed ecological rules remain distinct in the returned checks.
+A custom taxonomy requires its formula terms to occur in the fitted model;
+additional fitted terms are allowed. Passing the numerical screen does not
+rule out weakly identified states. Inspect state profiles and uncertainty,
+and compare independently polished fits with \code{\link[=diagnose_ssf_restarts]{diagnose_ssf_restarts()}}.
 }

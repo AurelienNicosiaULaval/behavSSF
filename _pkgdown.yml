@@ -6,7 +6,7 @@ development:
 template:
   bootstrap: 5
   bslib:
-    bg: "#fcfbf7"
+    bg: "#ffffff"
     fg: "#183345"
     primary: "#146475"
 navbar:
@@ -18,6 +18,7 @@ articles:
   navbar: ~
   contents:
   - zebra-hwange
+  - zebra-state-count
   - deer-restarts
   - condor-taxonomies
   - articles/elephant-lag-window
@@ -27,13 +28,19 @@ reference:
   contents:
   - fit_ssf
   - fit_guided_ssf
+  - compare_ssf_states
+  - ssf_blocks
+  - compare_ssf_state_labels
+  - plot.ssf_state_comparison
   - ssf_taxonomy
+  - ssf_contrast
   - assess_taxonomy
   - decode_states
   - decode_ssf_diel
   - movement_metrics
   - summary.ssf_fit
   - plot.ssf_fit
+  - theme_ssf
 - title: Prepare steps and evaluate kernels
   contents:
   - prepare_ssf_data

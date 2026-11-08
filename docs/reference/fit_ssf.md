@@ -25,7 +25,8 @@ fit_ssf(
   normalization = c("importance", "exact"),
   transition_hour = NULL,
   transition_harmonics = 2L,
-  step_harmonics = 0L
+  step_harmonics = 0L,
+  step_family = NULL
 )
 ```
 
@@ -55,7 +56,11 @@ fit_ssf(
 
 - n_starts:
 
-  Number of short runs. A one-state model uses one run.
+  Number of short runs. A one-state model uses one run. The best short
+  run is polished with the long budget. Use
+  [`diagnose_ssf_restarts()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/diagnose_ssf_restarts.md)
+  to polish starts independently and compare distinct solutions. A
+  successful local fit does not establish a global maximum.
 
 - short_iter, long_iter:
 
@@ -87,13 +92,13 @@ fit_ssf(
 
 - normalization:
 
-  importance uses case-control data; exact requires observed data from
-  prepare_ssf_steps() and supports only the canonical gamma-von Mises
-  terms and optional prospective target direction. Exact fitting
-  optimises log rate and log shape to preserve positive gamma
-  parameters. AR coefficients use a hyperbolic tangent link. Spread
-  applies on the working scale. Reported coefficients, covariance and
-  score are on the natural coefficient scale.
+  Importance uses case-control data. Exact uses observed data from
+  [`prepare_ssf_steps()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/prepare_ssf_steps.md)
+  and analytically normalised movement and direction terms on the full
+  plane. The original gamma interface optimises log rate and log shape
+  and uses bounded AR coefficients. Spread applies on the working scale.
+  Reported coefficients, covariance and score are on the natural
+  coefficient scale.
 
 - transition_hour:
 
@@ -115,6 +120,20 @@ fit_ssf(
   has its own curve. The curve adds to the log mean after any AR(1)
   adjustment. The gamma shape remains fixed within each state.
 
+- step_family:
+
+  Optional positive step-length distribution: `"gamma"`, `"lognormal"`,
+  `"inverse_gaussian"`, `"halfnormal"`, `"weibull"` or `"exponential"`.
+  With a family, the formula supplies angular and endpoint selection
+  terms only (default `~ cos_angle`, or `~ 1` for uniform turns). Exact
+  fits allow persistence and the canonical prospective target, with
+  homogeneous transitions on the full plane. Endpoint selection uses
+  importance normalisation. The parameters named `step_*` in the
+  coefficient matrix use the natural scale and are independent of the
+  density measure. The Weibull shape is estimated. Positive parameters
+  are optimised on the log scale. NULL uses the original
+  coefficient-form interface, including its gamma lag models.
+
 ## Value
 
 An `ssf_fit` object containing coefficients, transition matrix, log
@@ -129,11 +148,16 @@ describe the baseline before the hourly adjustment. Use
 [`decode_ssf_diel()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/decode_ssf_diel.md)
 to score new observations. After BFGS converges, a local Newton
 correction can reduce the score when the Hessian is positive definite.
-It accepts a correction when the largest absolute score falls and the
-objective improves or agrees to rounding precision. The Hessian is
-recomputed at the retained solution. The `score_refinement` diagnostic
-records the largest absolute score before this step and the number of
-accepted corrections. The convergence code and the original BFGS logs
-retain their optimiser meaning. For exact fits the stored Hessian uses
-working log-rate/log-shape parameters; covariance and score use the
-reported natural coefficient scale.
+It accepts a correction when the largest absolute curvature-scaled score
+falls and the objective improves or agrees to rounding precision. The
+Hessian is recomputed at the retained solution. The `score_refinement`
+diagnostic records the largest absolute score before this step and the
+number of accepted corrections. The convergence code and the original
+BFGS logs retain their optimiser meaning. The stored Hessian uses
+working parameters. Covariance and score use the reported natural
+coefficient scale. `scaled_score` divides the working gradient by the
+square root of each observed-Hessian diagonal. The acceptance screen
+uses its maximum absolute value (default 0.01). Curvature is checked
+after diagonal equilibration, with relative minimum eigenvalue above
+1e-8. These diagnostics are invariant to diagonal linear changes of
+parameter units, not arbitrary nonlinear reparameterisations.

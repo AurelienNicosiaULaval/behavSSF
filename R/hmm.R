@@ -114,8 +114,11 @@ decode_states <- function(log_emissions, transition,
 }
 
 .emissions <- function(design, coefficients) {
-  lp <- design$X %*% coefficients
-  out <- matrix(0, length(design$groups), ncol(coefficients))
+  .importance_emissions(design, design$X %*% coefficients)
+}
+
+.importance_emissions <- function(design, lp) {
+  out <- matrix(0, length(design$groups), ncol(lp))
   for (s in seq_along(design$groups)) {
     i <- design$groups[[s]]
     denominator <- apply(lp[i, , drop = FALSE] - design$logw[i], 2, .lse)
@@ -143,15 +146,21 @@ decode_states <- function(log_emissions, transition,
 #'   in columns. Row names must exactly match the design column names.
 #' @param normalization importance uses the published approximation; exact
 #'   uses observed ssf_steps and the analytic canonical-kernel normaliser.
+#' @param step_family Optional length family, as in [fit_ssf()]. Coefficients
+#'   use the named natural parameters returned by that fit.
 #' @return A matrix of log emission densities, one row per stratum.
 #' @export
 ssf_log_emissions <- function(data, formula, coefficients,
-                               normalization = c("importance", "exact")) {
+                               normalization = c("importance", "exact"), step_family = NULL) {
   normalization <- match.arg(normalization)
-  d <- if (normalization == "exact") .design_exact(data,formula) else .design(data, formula)
+  family <- .step_family(step_family)
+  exact <- normalization == "exact"
+  d <- if (!is.null(family)) .family_design(data, formula, family, exact) else
+    if (exact) .design_exact(data, formula) else .design(data, formula)
   b <- as.matrix(coefficients)
   if (!is.numeric(b) || nrow(b) != ncol(d$X) || !ncol(b) || any(!is.finite(b)) ||
       !identical(rownames(b), colnames(d$X)))
     .stop("coefficients must be finite and have row names matching the design columns in order.")
-  if (normalization == "exact") .exact_emissions(d,b) else .emissions(d, b)
+  if (!is.null(family)) return(.family_emissions(d, b, exact))
+  if (exact) .exact_emissions(d, b) else .emissions(d, b)
 }

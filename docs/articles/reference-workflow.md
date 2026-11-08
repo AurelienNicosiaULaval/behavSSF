@@ -243,3 +243,61 @@ including zero angular resultants.
 
 Simulation bands from these examples describe repeated tracks at the
 fitted parameters and the chosen model.
+
+## Check the numerical fit in meaningful units
+
+The raw gradient depends on the parameter units. Assessment uses the
+working gradient divided by the square root of the corresponding
+observed-Hessian diagonal. Its maximum must be at most 0.01. The native
+Hessian uses numerical differences of the analytic gradient. Curvature
+is checked after dividing each Hessian entry by the square root of the
+two diagonal entries. The smallest eigenvalue must exceed 1e-8 times the
+larger of one and the largest eigenvalue. These checks survive diagonal
+linear changes of parameter units. They do not prove that the optimiser
+found the global maximum.
+
+`fit$diagnostics$max_abs_scaled_gradient` reports the scaled score.
+`fit$diagnostics$max_abs_gradient` retains the raw natural-scale score.
+`fit$diagnostics$curvature` reports the scaled curvature. A small
+gradient with weak curvature calls for closer inspection, rather than an
+ecological label.
+
+## Declare a finite availability disk
+
+For a canonical importance model, pass `step_max` when preparing the
+original case and control rows. Use the same units as `step`:
+
+``` r
+
+choices <- prepare_ssf_data(raw_choices, density_measure = "area", step_max = 3.8)
+fit <- fit_ssf(choices, ~ step + log_step + cos_angle + canopy)
+movement_metrics(coef(fit), "area", step_max = 3.8)
+```
+
+[`assess_taxonomy()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/assess_taxonomy.md)
+and [`summary()`](https://rdrr.io/r/base/summary.html) read that support
+from the fit. A positive linear distance coefficient can be integrable
+on this disk. The package checks the behaviour near zero and uses the
+truncated radial mean for ordering. It holds habitat covariates constant
+when computing that mean. This is not a method for averaging movement
+over an arbitrary habitat polygon. Finite support is currently
+unavailable with explicit step families or exact normalisation.
+
+## Compare state coefficients within a rule
+
+The rule receives labelled joint covariance as well as marginal standard
+errors. For example, this additional rule asks whether the usual 95%
+Wald interval for the persistence difference lies above zero:
+
+``` r
+
+lengths <- ssf_taxonomy("lengths", c("Short", "Long"),
+  rules = function(s) c(more_persistent =
+    ssf_contrast(s, "cos_angle", from = "Short", to = "Long")$lower > 0))
+```
+
+The estimate is Long minus Short. Its variance includes the covariance
+between the two fitted coefficients. A missing covariance gives a
+missing interval, which fails the rule. This interval conditions on the
+fitted model. It does not adjust for trying several taxonomies, state
+counts or solutions.

@@ -3,7 +3,9 @@
 #' For a kernel proportional to exp(beta_step * r + beta_log * log(r)),
 #' the gamma shape is beta_log + 2 for a density with respect to planar area,
 #' and beta_log + 1 for a density with respect to step length and angle.
-#' The rate is -beta_step. These are intrinsic, habitat-free kernel summaries;
+#' The rate is -beta_step. On a finite disk this field can be negative;
+#' the moments then describe the bounded radial kernel, not a full-plane
+#' gamma distribution. These are intrinsic, habitat-free kernel summaries;
 #' they are not the marginal distribution under spatially varying habitat.
 #' With `lag_log_step`, mean and standard deviation describe the baseline
 #' gamma kernel at the first step of a segment. The mean also anchors the
@@ -18,13 +20,25 @@
 #' @param convention Required: `"area"` for the article's +2 convention or
 #'   `"step_angle"` for a step-length/angle density. The caller must verify
 #'   consistency with the measure of the sampling density w.
-#' @return A data frame with state, gamma shape/rate, mean/sd step length,
+#' @param step_max Upper radial support, or Inf. With finite support the
+#'   canonical mean and SD are conditional on (0, step_max], and a positive
+#'   linear step coefficient can be valid. Set this in [prepare_ssf_data()].
+#' @param step_family Optional length family supplied to [fit_ssf()].
+#'   Use the named distribution parameters from the fitted coefficient matrix.
+#' @return A data frame with state, shape/rate where applicable, mean/sd step length,
 #'   signed persistence, concentration, and kernel validity.
 #'   Invalid gamma kernels have NA moments, never fabricated finite values.
 #' @export
-movement_metrics <- function(coefficients, convention) {
+movement_metrics <- function(coefficients, convention, step_family = NULL, step_max = Inf) {
+  if (!is.numeric(step_max) || length(step_max) != 1L || is.na(step_max) || step_max <= 0)
+    .stop("step_max must be positive or Inf.")
   convention <- match.arg(convention, c("area", "step_angle"))
   b <- as.matrix(coefficients)
+  family <- .step_family(step_family)
+  if (!is.null(family)) {
+    if (is.finite(step_max)) .stop("Finite step_max currently uses the canonical kernel.")
+    return(.family_metrics(b, convention, family))
+  }
   required <- c("step", "log_step", "cos_angle")
   if (!is.numeric(b) || !ncol(b) || any(!is.finite(b)) ||
       is.null(rownames(b)) || anyDuplicated(rownames(b)) || !all(required %in% rownames(b)))
@@ -35,6 +49,12 @@ movement_metrics <- function(coefficients, convention) {
   mu <- sd <- rep(NA_real_, ncol(b))
   mu[valid] <- shape[valid] / rate[valid]
   sd[valid] <- sqrt(shape[valid]) / rate[valid]
+  if (is.finite(step_max)) {
+    bounded <- .bounded_radial_moments(shape, b["step", ], step_max)
+    mu <- bounded$mean
+    sd <- bounded$sd
+    valid <- bounded$valid
+  }
   data.frame(state = seq_len(ncol(b)), shape = shape, rate = rate,
              mean_step = mu, sd_step = sd, persistence = b["cos_angle", ],
              concentration = abs(b["cos_angle", ]), valid = valid,
@@ -48,6 +68,10 @@ movement_metrics <- function(coefficients, convention) {
 #' the target coefficient must be entirely positive. A significantly negative
 #' target coefficient does not establish attraction. Numerical failure and
 #' failed ecological rules remain distinct in the returned checks.
+#' A custom taxonomy requires its formula terms to occur in the fitted model;
+#' additional fitted terms are allowed. Passing the numerical screen does not
+#' rule out weakly identified states. Inspect state profiles and uncertainty,
+#' and compare independently polished fits with [diagnose_ssf_restarts()].
 #'
 #' @param fit An `ssf_fit` object.
 #' @param taxonomy One of `HDT_F_R`, `T_F_R`, `T_E`, or `Other`, or a
@@ -59,7 +83,7 @@ movement_metrics <- function(coefficients, convention) {
 #'   For daily transitions, the bounds apply at each of the 24 hours.
 #' @param min_mean_gap Nonnegative minimum absolute gap between ordered means,
 #'   in step-length units. This is not a significance test.
-#' @param score_tolerance Maximum absolute objective gradient for accepting a
+#' @param score_tolerance Maximum absolute curvature-scaled objective gradient for accepting a
 #'   numerically stationary fit. Missing or nonfinite scores fail this check.
 #' @return A list with `accepted`, named logical `checks`, state `labels`,
 #'   `metrics`, `occupancy`, and `reasons`. Wald intervals do not adjust for
@@ -86,10 +110,12 @@ assess_taxonomy <- function(fit, taxonomy, convention, target = "cos_diff_theta_
     .stop("persistence_bounds must be increasing bounds in [0, 1].")
   expected <- if (custom) length(taxonomy$labels) else .reference_state_counts[[taxonomy]]
   if (fit$n_states != expected) .stop("taxonomy and fitted state count disagree.")
-  m <- movement_metrics(fit$coefficients, convention)
+  if (custom) .check_taxonomy_formula(fit, taxonomy)
+  m <- movement_metrics(fit$coefficients, convention, fit$step_family,
+    if (is.null(fit$step_max)) Inf else fit$step_max)
   k <- fit$n_states
   occ <- tabulate(fit$state, nbins = k) / length(fit$state)
-  score <- fit$diagnostics$max_abs_gradient
+  score <- .assessment_score(fit)
   score_ok <- is.numeric(score) && length(score) == 1L && is.finite(score) &&
     score <= score_tolerance
   checks <- c(converged = isTRUE(fit$diagnostics$converged),
@@ -133,8 +159,10 @@ assess_taxonomy <- function(fit, taxonomy, convention, target = "cos_diff_theta_
     checks <- c(checks, target_positive = target_positive)
   }
   checks[is.na(checks)] <- FALSE
-  list(accepted = all(checks), checks = checks, labels = labels, metrics = m,
-       occupancy = occ, reasons = names(checks)[!checks], taxonomy = taxonomy)
+  structure(list(accepted = all(checks), checks = checks, labels = labels, metrics = m,
+       occupancy = occ, reasons = names(checks)[!checks], taxonomy = taxonomy,
+       context = if (anyNA(labels)) NULL else .taxonomy_context(fit, labels, m, occ)),
+    class = "ssf_assessment")
 }
 
 #' Fit and assess the descending taxonomies of the reference workflow
@@ -158,6 +186,7 @@ assess_taxonomy <- function(fit, taxonomy, convention, target = "cos_diff_theta_
 #'   ssf_steps and compatible analytically normalised kernels.
 #' @param step_ar Logical. Include state-specific length autoregression in
 #'   every candidate when using exact normalisation.
+#' @param step_family Optional length family passed to [fit_ssf()].
 #' @param taxonomies NULL for the reference sequence, or a nonempty ordered list
 #'   of [ssf_taxonomy()] specifications and/or built-in taxonomy names. Include
 #'   `"Other"` explicitly to try the one-state fallback in a custom sequence.
@@ -171,12 +200,14 @@ fit_guided_ssf <- function(data, convention, target = NULL, n_starts = 5L,
                            persistence_bounds = c(0.05, 0.95), min_mean_gap = 0,
                            engine = c("native", "R"), score_tolerance = 0.01,
                            normalization = c("importance", "exact"), step_ar = FALSE,
-                           taxonomies = NULL) {
+                           taxonomies = NULL, step_family = NULL) {
+  family <- .step_family(step_family)
   convention <- match.arg(convention, c("area", "step_angle"))
   engine <- match.arg(engine)
   normalization <- match.arg(normalization)
   if (!is.logical(step_ar) || length(step_ar) != 1L || is.na(step_ar))
     .stop("step_ar must be TRUE or FALSE.")
+  if (step_ar && !is.null(family)) .stop("step_ar uses the canonical gamma interface.")
   if (step_ar && normalization != "exact") .stop("step_ar requires exact normalisation.")
   if (identical(target, .step_ar_term)) .stop("The AR coefficient cannot be a target term.")
   if (!is.null(target) && (!is.character(target) || length(target) != 1L ||
@@ -196,14 +227,11 @@ fit_guided_ssf <- function(data, convention, target = NULL, n_starts = 5L,
     if (!inherits(data,"ssf_steps")) .stop("Exact fitting requires prepare_ssf_steps().")
   } else if (!inherits(data, "ssf_data")) data <- prepare_ssf_data(data)
   data <- convert_density_measure(data, convention)
-  required <- c("step", "log_step", "cos_angle")
-  if (!all(required %in% names(data))) .stop("The guided workflow requires step, log_step, and cos_angle.")
+  required <- if (is.null(family)) c("step", "log_step", "cos_angle") else "cos_angle"
   if (step_ar) required <- c(required, .step_ar_term)
-  # Reject input errors before starting the candidate search.
   base_formula <- stats::reformulate(required)
-  design <- if (normalization=="exact") .design_exact else .design
-  design(data, base_formula)
-  if (!is.null(target)) design(data, stats::reformulate(c(required, target)))
+  exact <- normalization == "exact"
+  design <- function(formula) .taxonomy_design(data, formula, family, exact)
   if (is.null(taxonomies)) {
     taxonomies <- as.list(c(if (!is.null(target)) "HDT_F_R", "T_F_R", "T_E", "Other"))
   }
@@ -211,14 +239,16 @@ fit_guided_ssf <- function(data, convention, target = NULL, n_starts = 5L,
     .stop("taxonomies must be NULL or a nonempty ordered list of candidate taxonomies.")
   candidates <- lapply(taxonomies, function(spec) {
     if (inherits(spec, "ssf_taxonomy")) {
-      f <- if (step_ar) stats::update(spec$formula, ~ . + lag_log_step) else spec$formula
-      design(data, f)
+      f <- .taxonomy_formula(spec, family)
+      if (step_ar) f <- stats::update(f, ~ . + lag_log_step)
+      design(f)
       return(list(name = spec$name, formula = f, n_states = length(spec$labels), spec = spec))
     }
     if (!is.character(spec) || length(spec) != 1L || !spec %in% names(.reference_state_counts))
       .stop("Each taxonomy must be a built-in name or a specification from ssf_taxonomy().")
     if (spec == "HDT_F_R" && is.null(target)) .stop("HDT_F_R requires a target column.")
     f <- if (spec == "HDT_F_R") stats::reformulate(c(required, target)) else base_formula
+    design(f)
     list(name = spec, formula = f, n_states = .reference_state_counts[[spec]], spec = spec)
   })
   if (anyDuplicated(vapply(candidates, `[[`, character(1), "name")))
@@ -230,7 +260,8 @@ fit_guided_ssf <- function(data, convention, target = NULL, n_starts = 5L,
       mode <- candidate$name
       attempt <- tryCatch({
         model <- fit_ssf(data, candidate$formula, candidate$n_states, n_starts, short_iter,
-                         long_iter, spread, engine = engine, normalization = normalization)
+                         long_iter, spread, engine = engine, normalization = normalization,
+                         step_family = family)
         list(fit = model, assessment = NULL, error = NULL)
       }, error = function(e) list(fit = NULL, assessment = NULL,
                                   error = conditionMessage(e), starts = e$attempts))
@@ -259,5 +290,17 @@ print.guided_ssf <- function(x, ...) {
   if (is.null(x$fit)) cat("Guided HMM-SSF. No candidate selected.\n") else
     cat("Guided HMM-SSF with", nrow(x$fit$observations), "observed steps\n")
   .print_guided_candidates(.guided_candidates(x))
+  invisible(x)
+}
+
+#' @rdname assess_taxonomy
+#' @param x An assessment returned by `assess_taxonomy()`.
+#' @param ... Reserved for S3 methods.
+#' @export
+print.ssf_assessment <- function(x, ...) {
+  cat("Taxonomy:", x$taxonomy, "|", if (x$accepted) "accepted" else "rejected", "\n")
+  cat("Labels:", paste(x$labels, collapse = ", "), "\n")
+  cat("Checks passed:", sum(x$checks), "of", length(x$checks), "\n")
+  if (length(x$reasons)) cat("Failed:", paste(x$reasons, collapse = ", "), "\n")
   invisible(x)
 }

@@ -6,9 +6,20 @@
   : Fit a hidden Markov step selection model
 - [`fit_guided_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/fit_guided_ssf.md)
   : Fit and assess the descending taxonomies of the reference workflow
+- [`compare_ssf_states()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_states.md)
+  : Compare state taxonomies on held-out trajectory blocks
+- [`ssf_blocks()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_blocks.md)
+  : Make consecutive validation blocks without splitting segments
+- [`compare_ssf_state_labels()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_state_labels.md)
+  : Compare step labels between two state counts
+- [`plot(`*`<ssf_state_comparison>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot.ssf_state_comparison.md)
+  : Plot validation scores or changes along the trajectory
 - [`ssf_taxonomy()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_taxonomy.md)
   : Define a configurable state taxonomy
+- [`ssf_contrast()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_contrast.md)
+  : Compute a coefficient contrast using labelled joint covariance
 - [`assess_taxonomy()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/assess_taxonomy.md)
+  [`print(`*`<ssf_assessment>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/assess_taxonomy.md)
   : Assess a fitted ecological taxonomy
 - [`decode_states()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/decode_states.md)
   : Decode independent hidden Markov sequences in log space
@@ -24,6 +35,8 @@
 - [`plot(`*`<ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot.ssf_fit.md)
   [`plot(`*`<guided_ssf>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot.ssf_fit.md)
   : Plot fitted behavioural states
+- [`theme_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/theme_ssf.md)
+  : A common white theme for movement plots
 
 ## Prepare steps and evaluate kernels
 
@@ -48,7 +61,8 @@
 ## Simulate and diagnose
 
 - [`simulate_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/simulate_ssf.md)
-  : Simulate exact gamma-von Mises trajectories on independent segments
+  : Simulate analytically normalised trajectories on independent
+  segments
 - [`movement_diagnostics()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/movement_diagnostics.md)
   : Compute observable movement summaries without crossing segment
   boundaries

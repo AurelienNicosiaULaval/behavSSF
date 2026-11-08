@@ -30,8 +30,11 @@ ssf_taxonomy(
 
 - formula:
 
-  One-sided SSF formula, including `step`, `log_step`, and `cos_angle`.
-  It must be supported by the chosen normalisation.
+  One-sided SSF formula. The default uses the canonical gamma terms, or
+  only `cos_angle` if the fit specifies a length family. Supply angular
+  and selection terms for a custom step-family formula. Assessment
+  requires these terms in the fitted model; the fitted model may contain
+  additional terms.
 
 - order_by:
 
@@ -49,7 +52,11 @@ ssf_taxonomy(
   `transition` (rows and columns named by label), and `occupancy` (named
   by label). Its return value is a nonempty logical vector with unique
   names. Each FALSE or NA rejects the candidate. Standard errors are NA
-  if the fit has no covariance matrix.
+  if the fit has no covariance matrix. The list also contains the joint
+  natural-scale coefficient `covariance` and a `parameter_index` table
+  identifying each row by `state` and `term`. Use
+  [`ssf_contrast()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_contrast.md)
+  to form a contrast without numeric parameter indices.
 
 ## Value
 
@@ -74,7 +81,10 @@ ssf_taxonomy("step_regimes", c("Short steps", "Long steps"),
 #> 
 #> $formula
 #> ~step + log_step + cos_angle
-#> <environment: 0x105ad5b88>
+#> <environment: 0x10bc64ea8>
+#> 
+#> $default_formula
+#> [1] TRUE
 #> 
 #> $order_by
 #> [1] "mean_step"
@@ -85,7 +95,7 @@ ssf_taxonomy("step_regimes", c("Short steps", "Long steps"),
 #>     c(length_ratio = s$metrics["Long steps", "mean_step"] > 2 * 
 #>         s$metrics["Short steps", "mean_step"])
 #> }
-#> <environment: 0x105ab5e20>
+#> <environment: 0x10bfc1208>
 #> 
 #> attr(,"class")
 #> [1] "ssf_taxonomy"

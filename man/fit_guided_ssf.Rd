@@ -20,7 +20,8 @@ fit_guided_ssf(
   score_tolerance = 0.01,
   normalization = c("importance", "exact"),
   step_ar = FALSE,
-  taxonomies = NULL
+  taxonomies = NULL,
+  step_family = NULL
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ every candidate when using exact normalisation.}
 \item{taxonomies}{NULL for the reference sequence, or a nonempty ordered list
 of \code{\link[=ssf_taxonomy]{ssf_taxonomy()}} specifications and/or built-in taxonomy names. Include
 \code{"Other"} explicitly to try the one-state fallback in a custom sequence.}
+
+\item{step_family}{Optional length family passed to \code{\link[=fit_ssf]{fit_ssf()}}.}
 }
 \value{
 A \code{guided_ssf} object with selection status, selected fit and

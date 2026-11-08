@@ -18,7 +18,8 @@ fit_ssf(
   normalization = c("importance", "exact"),
   transition_hour = NULL,
   transition_harmonics = 2L,
-  step_harmonics = 0L
+  step_harmonics = 0L,
+  step_family = NULL
 )
 }
 \arguments{
@@ -35,7 +36,11 @@ The absolute lag coefficients sum to less than one in each state.}
 
 \item{n_states}{Number of hidden states, between 1 and 6.}
 
-\item{n_starts}{Number of short runs. A one-state model uses one run.}
+\item{n_starts}{Number of short runs. A one-state model uses one run.
+The best short run is polished with the long budget. Use
+\code{\link[=diagnose_ssf_restarts]{diagnose_ssf_restarts()}} to polish starts independently and compare
+distinct solutions. A successful local fit does not establish a global
+maximum.}
 
 \item{short_iter, long_iter}{Maximum BFGS iterations for short and long phases.}
 
@@ -55,13 +60,12 @@ fit with the same transition harmonics in place of \code{transition}.
 Supply \code{step_hour_coefficients} from a fit with the same length
 harmonics to reuse those effects. They start at zero by default.}
 
-\item{normalization}{importance uses case-control data; exact requires
-observed data from prepare_ssf_steps() and supports only the canonical
-gamma-von Mises terms and optional prospective target direction.
-Exact fitting optimises log rate and log shape to preserve positive gamma
-parameters. AR coefficients use a hyperbolic tangent link. Spread applies
-on the working scale. Reported coefficients,
-covariance and score are on the natural coefficient scale.}
+\item{normalization}{Importance uses case-control data. Exact uses observed
+data from \code{\link[=prepare_ssf_steps]{prepare_ssf_steps()}} and analytically normalised movement and
+direction terms on the full plane. The original gamma interface optimises
+log rate and log shape and uses bounded AR coefficients. Spread applies on
+the working scale. Reported coefficients, covariance and score are on
+the natural coefficient scale.}
 
 \item{transition_hour}{Optional integer hour (0 to 23) at the beginning
 of each step. Daily transitions require two states and exact fitting
@@ -77,6 +81,18 @@ the gamma step length, from 0 to 5. A positive value requires
 \code{transition_hour}. Each state has its own curve. The curve adds to
 the log mean after any AR(1) adjustment. The gamma shape remains fixed
 within each state.}
+
+\item{step_family}{Optional positive step-length distribution: \code{"gamma"},
+\code{"lognormal"}, \code{"inverse_gaussian"}, \code{"halfnormal"}, \code{"weibull"} or
+\code{"exponential"}. With a family, the formula supplies angular and
+endpoint selection terms only (default \code{~ cos_angle}, or \code{~ 1} for
+uniform turns). Exact fits allow persistence and the canonical
+prospective target, with homogeneous transitions on the full plane.
+Endpoint selection uses importance normalisation. The parameters
+named \verb{step_*} in the coefficient matrix use the natural scale and
+are independent of the density measure. The Weibull shape is estimated.
+Positive parameters are optimised on the log scale. NULL uses the
+original coefficient-form interface, including its gamma lag models.}
 }
 \value{
 An \code{ssf_fit} object containing coefficients, transition matrix,
@@ -91,13 +107,18 @@ coefficients describe the baseline before the hourly adjustment.
 Use \code{\link[=decode_ssf_diel]{decode_ssf_diel()}} to score new observations.
 After BFGS converges, a local Newton correction can reduce the score when
 the Hessian is positive definite. It accepts a correction when the
-largest absolute score falls and the objective improves or agrees to
+largest absolute curvature-scaled score falls and the objective improves or agrees to
 rounding precision. The Hessian is recomputed at the retained solution. The
 \code{score_refinement} diagnostic records the largest absolute score before
 this step and the number of accepted corrections. The convergence code
 and the original BFGS logs retain their optimiser meaning.
-For exact fits the stored Hessian uses working log-rate/log-shape parameters;
-covariance and score use the reported natural coefficient scale.
+The stored Hessian uses working parameters. Covariance and score use
+the reported natural coefficient scale. \code{scaled_score} divides the working
+gradient by the square root of each observed-Hessian diagonal. The
+acceptance screen uses its maximum absolute value (default 0.01).
+Curvature is checked after diagonal equilibration, with relative minimum
+eigenvalue above 1e-8. These diagnostics are invariant to diagonal linear
+changes of parameter units, not arbitrary nonlinear reparameterisations.
 }
 \description{
 Uses either the published SSF importance approximation or exact canonical

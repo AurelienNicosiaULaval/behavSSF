@@ -97,9 +97,42 @@ plot.guided_ssf <- function(x, ..., type = c("auto", "track", "posterior"),
   palette <- c("#166484", "#B6501C", "#784B8B", "#21765A", "#9E3D60", "#526372")
   p + ggplot2::scale_colour_manual(values = palette[seq_along(labels)], drop = FALSE,
                                    name = NULL) +
-    ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(legend.position = "bottom", panel.grid.minor = ggplot2::element_blank(),
-      text = ggplot2::element_text(colour = "#183345"),
-      plot.background = ggplot2::element_rect(fill = "white", colour = NA),
-      plot.title.position = "plot")
+    theme_ssf() + ggplot2::theme(legend.position = "bottom")
 }
+#' A common white theme for movement plots
+#'
+#' Uses the same fonts, light grid lines and white panel, legend and facet
+#' backgrounds as the package's worked examples. Add ordinary ggplot2 theme
+#' settings afterwards to adjust a particular plot.
+#' @return A complete ggplot2 theme. Requires the optional ggplot2 package.
+#' @export
+theme_ssf <- function() {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) .stop("Install ggplot2 to use theme_ssf().")
+  ink <- "#193541"
+  muted <- "#526773"
+  ggplot2::theme_minimal(base_size = 12, base_family = "sans") +
+    ggplot2::theme(
+      text = ggplot2::element_text(colour = ink),
+      plot.background = ggplot2::element_rect(fill = "white", colour = NA),
+      panel.background = ggplot2::element_rect(fill = "white", colour = NA),
+      legend.background = ggplot2::element_rect(fill = "white", colour = NA),
+      legend.key = ggplot2::element_rect(fill = "white", colour = NA),
+      strip.background = ggplot2::element_rect(fill = "white", colour = NA),
+      strip.text = ggplot2::element_text(face = "bold", size = 11),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_line(colour = "#E5E5E5", linewidth = .3),
+      axis.text = ggplot2::element_text(colour = muted, size = 10),
+      axis.title = ggplot2::element_text(colour = ink, size = 11),
+      plot.title = ggplot2::element_text(face = "bold", size = 13,
+        margin = ggplot2::margin(b = 6)),
+      plot.subtitle = ggplot2::element_text(colour = muted, size = 10,
+        margin = ggplot2::margin(b = 8), lineheight = 1.1),
+      plot.caption = ggplot2::element_text(colour = muted, size = 9,
+        hjust = 0, margin = ggplot2::margin(t = 9)),
+      plot.title.position = "plot", plot.caption.position = "plot",
+      legend.position = "top", legend.justification = "left",
+      legend.title = ggplot2::element_blank(),
+      legend.text = ggplot2::element_text(size = 10),
+      plot.margin = ggplot2::margin(9, 11, 8, 11))
+}
+

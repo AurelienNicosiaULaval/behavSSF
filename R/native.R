@@ -49,3 +49,19 @@ NULL
        gr = function(theta) evaluate(theta)$gradient,
        diagnostics = function() list(invalid_evaluations = invalid, reasons = errors))
 }
+
+.native_family_objective <- function(d, n_states, exact) {
+  x <- d$X
+  storage.mode(x) <- "double"
+  segment <- as.integer(factor(d$segment, levels = unique(d$segment)))
+  context <- list(match(d$family, names(.step_families)), as.double(d$data$step),
+    as.double(d$log_step), d$area)
+  if (exact) {
+    indices <- match(c("cos_angle", .exact_terms[4L]), colnames(x), nomatch = 0L) - 1L
+    context <- c(context, as.list(indices), list(d$relative_bearing, d$target_active))
+  }
+  starts <- if (!exact) as.integer(vapply(d$groups, "[", integer(1), 1L) - 1L)
+  sizes <- if (!exact) lengths(d$groups)
+  .cached_objective(function(theta) .Call(C_behavSSF_family_objective,
+    as.double(theta), x, d$logw, starts, sizes, segment, as.integer(n_states), context))
+}

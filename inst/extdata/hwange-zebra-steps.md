@@ -5,6 +5,10 @@ version 2](https://doi.org/10.6084/m9.figshare.34077912.v2). The source
 article is [PLOS ONE 21(10), e0360547](https://doi.org/10.1371/journal.pone.0360547).
 The GPS data are also available in the archive of
 [Klappstein, Thomas and Michelot (2023)](https://doi.org/10.5281/zenodo.7872602).
+The original tracking analysis is
+[Michelot et al. (2020), Inference in MCMC step selection models](https://doi.org/10.1111/biom.13170).
+Simon Chamaillé-Jammes provided the GPS track and vegetation raster used
+in the Klappstein et al. replication archive, which is licensed CC BY 4.0.
 The prepared data are distributed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 The preparation script is `data-raw/prepare-zebra.R` in the source repository.

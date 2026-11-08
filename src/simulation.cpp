@@ -10,6 +10,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <vector>
+#include "radial.h"
 
 namespace {
 const double pi = 3.14159265358979323846;
@@ -83,13 +84,14 @@ double von_mises(double mean, double concentration) {
 }
 
 extern "C" SEXP behavSSF_simulate(SEXP parameters_, SEXP transition_, SEXP initial_,
-                                   SEXP segments_, SEXP targets_, SEXP n_sims_, SEXP fixed_) {
+                                   SEXP segments_, SEXP targets_, SEXP n_sims_, SEXP fixed_, SEXP family_) {
   bool rng_open = false;
   try {
     int k = INTEGER(Rf_getAttrib(parameters_, R_DimSymbol))[0];
     int n_segments = INTEGER(Rf_getAttrib(segments_, R_DimSymbol))[0];
     int n_targets = INTEGER(Rf_getAttrib(targets_, R_DimSymbol))[0];
     int n_sims = Rf_asInteger(n_sims_);
+    const int family = Rf_asInteger(family_);
     const double* par = REAL(parameters_);
     const bool hourly_length = INTEGER(Rf_getAttrib(parameters_, R_DimSymbol))[1] == 34;
     const double* transition = REAL(transition_);
@@ -130,25 +132,30 @@ extern "C" SEXP behavSSF_simulate(SEXP parameters_, SEXP transition_, SEXP initi
           double angle = von_mises(std::atan2(vy, vx), concentration);
           const double shape = par[state];
           const double rate = par[state+k];
-          const double rho = par[state+4*k];
-          double scale = 1/rate;
-          if (t > 0 && rho != 0) {
-            const double log_anchor = std::log(shape)-std::log(rate);
-            scale = std::exp(-std::log(rate)+rho*(std::log(previous_step)-log_anchor));
-          }
-          for (int lag = 22; lag <= 26 && t >= lag; ++lag) {
-            const double rho_day = par[state+(5+lag-22)*k];
-            if (rho_day != 0) {
+          double step;
+          if (family != canonical) {
+            step = radial_draw(family, shape, rate);
+          } else {
+            const double rho = par[state+4*k];
+            double scale = 1/rate;
+            if (t > 0 && rho != 0) {
               const double log_anchor = std::log(shape)-std::log(rate);
-              scale *= std::exp(rho_day*(log_step_history[(t-lag)%26]-log_anchor));
+              scale = std::exp(-std::log(rate)+rho*(std::log(previous_step)-log_anchor));
             }
+            for (int lag = 22; lag <= 26 && t >= lag; ++lag) {
+              const double rho_day = par[state+(5+lag-22)*k];
+              if (rho_day != 0) {
+                const double log_anchor = std::log(shape)-std::log(rate);
+                scale *= std::exp(rho_day*(log_step_history[(t-lag)%26]-log_anchor));
+              }
+            }
+            if (hourly_length) scale *= std::exp(par[state+(10+hour)*k]);
+            if (!(scale > 0) || !std::isfinite(scale))
+              throw std::runtime_error("Nonpositive or nonfinite gamma scale in simulation.");
+            step = Rf_rgamma(shape, scale);
           }
-          if (hourly_length) scale *= std::exp(par[state+(10+hour)*k]);
-          if (!(scale > 0) || !std::isfinite(scale))
-            throw std::runtime_error("Nonpositive or nonfinite gamma scale in simulation.");
-          double step = Rf_rgamma(shape, scale);
           if (!(step > 0) || !std::isfinite(step))
-            throw std::runtime_error("Nonpositive or nonfinite gamma step generated.");
+            throw std::runtime_error("Nonpositive or nonfinite step generated.");
           heading = std::atan2(std::sin(heading+angle), std::cos(heading+angle));
           x += step*std::cos(heading); y += step*std::sin(heading);
           previous_step = step;

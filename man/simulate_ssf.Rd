@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate.R
 \name{simulate_ssf}
 \alias{simulate_ssf}
-\title{Simulate exact gamma-von Mises trajectories on independent segments}
+\title{Simulate analytically normalised trajectories on independent segments}
 \usage{
 simulate_ssf(
   fit,
@@ -43,8 +43,10 @@ seed. Track rows are generated endpoints, not the initial positions.
 Parameters remain fixed; parameter uncertainty is not propagated.
 }
 \description{
-Supports the movement terms step, log_step, cos_angle and an optional single
-cos-direction-to-target term. No finite control-point approximation is used
+Supports the canonical gamma kernel and the step-length families of
+\code{\link[=fit_ssf]{fit_ssf()}}. With an explicit family, use a fitted exact kernel, with
+optional persistence and a single prospective target direction.
+No finite control-point approximation is used
 for simulation. With a target effect, the nearest supplied fixed target is
 recomputed at the current position before each step. Movement is unbounded;
 neither the raster extent nor observed positions are imposed as barriers.

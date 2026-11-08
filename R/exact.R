@@ -100,6 +100,8 @@ prepare_ssf_steps <- function(data, density_measure, id = "ID", time = NULL,
     .stop("Exact fitting requires observed data from prepare_ssf_steps().")
   if (!inherits(formula, "formula") || length(formula) != 2L)
     .stop("formula must be one-sided.")
+  if (!is.null(attr(data, "step_max")) && is.finite(attr(data, "step_max")))
+    .stop("Exact normalisation requires unbounded radial support.")
   formula_terms <- stats::terms(formula)
   if (length(attr(formula_terms,"offset"))) .stop("Exact kernels do not support formula offsets.")
   terms <- attr(formula_terms, "term.labels")

@@ -18,8 +18,11 @@ are reserved.}
 
 \item{labels}{One to six unique state labels, in increasing signature order.}
 
-\item{formula}{One-sided SSF formula, including \code{step}, \code{log_step}, and
-\code{cos_angle}. It must be supported by the chosen normalisation.}
+\item{formula}{One-sided SSF formula. The default uses the canonical gamma
+terms, or only \code{cos_angle} if the fit specifies a length family. Supply
+angular and selection terms for a custom step-family formula.
+Assessment requires these terms in the fitted model; the fitted model
+may contain additional terms.}
 
 \item{order_by}{Name of a numeric movement metric from \code{\link[=movement_metrics]{movement_metrics()}}
 (\code{mean_step}, \code{sd_step}, \code{persistence}, \code{concentration}, \code{shape}, or
@@ -32,7 +35,10 @@ fail the label assignment.}
 named by label), \code{transition} (rows and columns named by label), and
 \code{occupancy} (named by label). Its return value is a nonempty logical
 vector with unique names. Each FALSE or NA rejects the candidate.
-Standard errors are NA if the fit has no covariance matrix.}
+Standard errors are NA if the fit has no covariance matrix.
+The list also contains the joint natural-scale coefficient \code{covariance}
+and a \code{parameter_index} table identifying each row by \code{state} and \code{term}.
+Use \code{\link[=ssf_contrast]{ssf_contrast()}} to form a contrast without numeric parameter indices.}
 }
 \value{
 An \code{ssf_taxonomy} specification for \code{\link[=assess_taxonomy]{assess_taxonomy()}} and

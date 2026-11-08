@@ -84,8 +84,9 @@ summary.guided_ssf <- function(object, ...) {
   counts <- tabulate(fit$state, nbins = fit$n_states)
   states <- data.frame(state = labels, n_steps = counts, fraction = counts / n_steps)
   if (isTRUE(fit$density_measure %in% c("area", "step_angle")) &&
-      all(c("step", "log_step", "cos_angle") %in% rownames(b))) {
-    metrics <- movement_metrics(b, fit$density_measure)
+      (!is.null(fit$step_family) || all(c("step", "log_step", "cos_angle") %in% rownames(b)))) {
+    metrics <- movement_metrics(b, fit$density_measure, fit$step_family,
+      if (is.null(fit$step_max)) Inf else fit$step_max)
     states$mean_step <- metrics$mean_step
     states$persistence <- metrics$persistence
   }
@@ -106,7 +107,7 @@ summary.guided_ssf <- function(object, ...) {
     states = states, coefficients = coefficients, transition = transition,
     n_steps = n_steps, n_segments = length(unique(fit$observations$ID)),
     normalization = fit$normalization, density_measure = fit$density_measure,
-    log_likelihood = fit$log_likelihood, diagnostics = fit$diagnostics
+    step_family = fit$step_family, log_likelihood = fit$log_likelihood, diagnostics = fit$diagnostics
   ), class = "summary_ssf_fit")
 }
 
@@ -116,10 +117,11 @@ print.summary_ssf_fit <- function(x, digits = 4L, ...) {
   cat("HMM-SSF summary\n")
   cat(x$n_steps, "observed steps in", x$n_segments, "segment(s)\n")
   cat("Normalisation:", x$normalization, "| density measure:", x$density_measure, "\n")
+  if (!is.null(x$step_family)) cat("Step-length family:", x$step_family, "\n")
   cat("Log likelihood:", format(x$log_likelihood, digits = digits), "\n")
   d <- x$diagnostics
   cat("Converged:", d$converged, "| positive Hessian:", d$hessian_positive,
-      "| maximum absolute gradient:", format(d$max_abs_gradient, digits = digits), "\n")
+      "| scaled gradient:", format(if (is.null(d$max_abs_scaled_gradient)) NA_real_ else d$max_abs_scaled_gradient, digits = digits), "\n")
   cat("\nStates (Viterbi assignments)\n")
   print(x$states, digits = digits, row.names = FALSE)
   cat("\nStep-selection coefficients\n")

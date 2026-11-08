@@ -24,7 +24,9 @@ diagnose_ssf_restarts(
   assessment_args = list(),
   likelihood_tol = 1e-05,
   parameter_tol = 0.001,
-  objective_tol = 1e-07
+  objective_tol = 1e-07,
+  step_family = NULL,
+  keep_rejected = FALSE
 )
 ```
 
@@ -95,6 +97,17 @@ diagnose_ssf_restarts(
 
   Maximum allowed difference between the optimiser and forward log
   likelihood.
+
+- step_family:
+
+  Optional length family passed to
+  [`fit_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/fit_ssf.md).
+
+- keep_rejected:
+
+  Retain each successful optimisation in `all_fits`, including
+  taxonomically rejected fits, for reassessment without refitting.
+  Errors remain NULL. Default FALSE limits memory use.
 
 ## Value
 

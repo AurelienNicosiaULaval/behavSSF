@@ -12,23 +12,31 @@ prepare_ssf_data(
   weight = "w",
   time = NULL,
   density_measure = c("unspecified", "area", "step_angle"),
-  expected_interval = NULL
+  expected_interval = NULL,
+  step_max = Inf
 )
 }
 \arguments{
 \item{data}{A data frame of observed and control steps.}
 
 \item{id, stratum, observed, weight}{Names of the segment, choice set,
-binary observation, and positive sampling density columns.}
+binary observation, and positive sampling density columns. Weights may
+be proportional to the conditioned proposal within a choice set when
+interpreting conditional choice probabilities. Absolute emission densities
+require the correctly normalised proposal on the availability domain.}
 
 \item{time}{Optional name of a numeric or POSIXct observation time column.}
 
 \item{density_measure}{Measure of the supplied sampling density: \code{"area"},
-\code{"step_angle"}, or \code{"unspecified"}. This annotation does not alter weights.}
+\code{"step_angle"}, or \code{"unspecified"}. This annotation records the convention; it does not alter or verify weights.}
 
 \item{expected_interval}{Optional positive interval between consecutive
 cases within a segment. Requires time. Units are seconds for POSIXct,
 otherwise the units of the numeric time column. Gaps cause an error.}
+
+\item{step_max}{Upper radial support in step-length units, or Inf for
+unbounded support. Declare the radius of a common availability disk here.
+Finite support currently uses the canonical importance kernel.}
 }
 \value{
 A validated data frame of class \code{ssf_data}, with standard columns
@@ -40,6 +48,8 @@ IDs across observation gaps, even for the same animal. Strata follow their
 first appearance in the input; rows are reordered within strata to put the
 case first. If time is supplied, case times must increase within each segment.
 No incomplete stratum or nonfinite value is silently removed.
+If you rearrange rows after preparation, prepare the original data again
+before fitting. Prepared choice sets must remain contiguous and case-first.
 }
 \examples{
 d <- data.frame(ID = 1, stratum = rep(1:3, each = 2),

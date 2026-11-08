@@ -27,6 +27,8 @@ library(ggplot2)
 
 ``` r
 
+theme_set(theme_ssf())
+knitr::opts_chunk$set(dev.args = list(bg = "white"))
 library(patchwork)
 
 gps <- readRDS(system.file("extdata", "deer-restart-steps.rds",
@@ -164,7 +166,7 @@ labels <- ggplot(strip, aes(step, fit)) +
     colour = "#AE3E1B", size = 1.5) +
   scale_fill_manual(values = c("Short steps" = "#DCE7EE", "Long steps" = "#506879")) +
   labs(x = "Step within segment", y = NULL, fill = NULL) +
-  theme_minimal(base_size = 12) +
+  theme_ssf() +
   theme(panel.grid = element_blank(), legend.position = "bottom")
 
 route / labels + plot_layout(heights = c(3, 1.2))
@@ -297,3 +299,25 @@ GPS fixes from Verein für Wildtierforschung Dresden und Göttingen e.V.,
 distributed with [`amt`
 0.3.1.0](https://cran.r-project.org/package=amt). The preparation script
 in the package source is `data-raw/prepare-deer.R`.
+
+## Reassess a rejected fitted solution
+
+The solution table groups only starts that pass the chosen taxonomy.
+Rejected starts stay in the log. By default, their full fitted models
+are not retained. If you want to try a different interpretation
+afterwards, ask to keep them:
+
+``` r
+
+check <- diagnose_ssf_restarts(steps, short_long, n_starts = 30L,
+  seed = 60200L, keep_rejected = TRUE)
+rejected <- which(check$restarts$status == "rejected")
+if (length(rejected)) {
+  fit <- check$all_fits[[rejected[1L]]]
+  assess_taxonomy(fit, another_taxonomy, convention = "area")
+}
+```
+
+Here `another_taxonomy` is a specification you have defined for the same
+state count. Retaining fits uses more memory. A failed optimisation
+still has no fitted object, so its entry is `NULL`.

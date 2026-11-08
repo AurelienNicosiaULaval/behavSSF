@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include "diel.h"
+#include "radial.h"
 
 namespace {
 double log_sum(const std::vector<double>& x) {
@@ -48,13 +49,16 @@ std::vector<double> solve(std::vector<double> a, std::vector<double> b, int k) {
 }
 
 SEXP objective_impl(SEXP theta_, SEXP x_, SEXP logw_,
-                    SEXP starts_, SEXP sizes_, SEXP segments_, SEXP k_, SEXP exact_) {
+                    SEXP starts_, SEXP sizes_, SEXP segments_, SEXP k_, SEXP exact_, SEXP family_) {
   try {
     const int k = Rf_asInteger(k_);
     const int nrow = INTEGER(Rf_getAttrib(x_, R_DimSymbol))[0];
     const int p = INTEGER(Rf_getAttrib(x_, R_DimSymbol))[1];
     const bool exact = exact_ != R_NilValue;
-    const int n = exact ? nrow : Rf_length(starts_);
+    const int family = family_ == R_NilValue ? canonical : Rf_asInteger(VECTOR_ELT(family_, 0));
+    const bool family_exact = family != canonical && exact_ == R_NilValue && starts_ == R_NilValue;
+    const bool integrated = exact || family_exact;
+    const int n = integrated ? nrow : Rf_length(starts_);
     const bool diel = exact && Rf_length(exact_) >= 6;
     const int q = diel ? Rf_length(VECTOR_ELT(exact_, 5))/24 : 1;
     const bool hourly_length = exact && Rf_length(exact_) == 7;
@@ -143,11 +147,38 @@ SEXP objective_impl(SEXP theta_, SEXP x_, SEXP logw_,
         }
       }
     }
+    const int radial_count = family == canonical ? 0 :
+      (family == halfnormal_step || family == exponential_step ? 1 : 2);
+    const double* length = nullptr;
+    const double* log_length = nullptr;
+    bool area = false;
+    std::vector<double> gamma_digamma(k);
+    if (family != canonical) {
+      length = REAL(VECTOR_ELT(family_, 1));
+      log_length = REAL(VECTOR_ELT(family_, 2));
+      area = Rf_asLogical(VECTOR_ELT(family_, 3));
+      for (int state = 0; state < k; ++state) {
+        for (int v = 0; v < radial_count; ++v) {
+          if (family == lognormal_step && v == 0) continue;
+          const int j = state * p + v;
+          natural[j] = jacobian[j] = std::exp(working[j]);
+          if (!std::isfinite(natural[j]) || !(natural[j] > 0))
+            throw std::runtime_error("Step-family parameters must be finite and positive.");
+        }
+        if (family == gamma_step) gamma_digamma[state] = Rf_digamma(natural[state * p]);
+      }
+      if (family_exact) {
+        persistence_index = Rf_asInteger(VECTOR_ELT(family_, 4));
+        target_index = Rf_asInteger(VECTOR_ELT(family_, 5));
+        psi = REAL(VECTOR_ELT(family_, 6));
+        active = REAL(VECTOR_ELT(family_, 7));
+      }
+    }
     const double* theta = natural.data();
     const double* x = REAL(x_);
-    const double* logw = exact ? nullptr : REAL(logw_);
-    const int* starts = exact ? nullptr : INTEGER(starts_);
-    const int* sizes = exact ? nullptr : INTEGER(sizes_);
+    const double* logw = integrated ? nullptr : REAL(logw_);
+    const int* starts = integrated ? nullptr : INTEGER(starts_);
+    const int* sizes = integrated ? nullptr : INTEGER(sizes_);
     const int* segments = INTEGER(segments_);
     std::vector<double> P(k*k), logP(k*k), delta(k, 1), A(k*k);
     int index = p*k;
@@ -205,11 +236,12 @@ SEXP objective_impl(SEXP theta_, SEXP x_, SEXP logw_,
       base_angular_score[state] = concentration < 1e-5 ? a*(.5-concentration*concentration/16) :
         (a/concentration)*Rf_bessel_i(concentration,1,2)/i0;
     }
+    std::vector<RadialDensity> radial;
     int segment_age = 0;
     for (int s = 0; s < n; ++s) {
       if (s % 512 == 0) R_CheckUserInterrupt();
       segment_age = s > 0 && segments[s] == segments[s-1] ? segment_age+1 : 0;
-      const int first = exact ? s : starts[s], count = exact ? 1 : sizes[s];
+      const int first = integrated ? s : starts[s], count = integrated ? 1 : sizes[s];
       for (int state = 0; state < k; ++state) {
         if (exact) {
           const double a = theta[persistence_index+p*state];
@@ -275,17 +307,67 @@ SEXP objective_impl(SEXP theta_, SEXP x_, SEXP logw_,
             throw std::runtime_error("Nonfinite exact emission density.");
           continue;
         }
+        if (family_exact) {
+          const double a = persistence_index < 0 ? 0 : theta[persistence_index+p*state];
+          const double b = target_index < 0 ? 0 : active[s]*theta[target_index+p*state];
+          const double c = std::cos(psi[s]), vx = a+b*c, vy = b*std::sin(psi[s]);
+          const double concentration = std::hypot(vx, vy);
+          const double scaled_i0 = Rf_bessel_i(concentration, 0, 2);
+          const double log_angular_z = std::log(2*std::acos(-1.0)) +
+            std::log(scaled_i0) + concentration;
+          const double ratio = concentration < 1e-5 ? .5-concentration*concentration/16 :
+            Rf_bessel_i(concentration, 1, 2)/(concentration*scaled_i0);
+          const RadialDensity value = radial_density(family, length[s], log_length[s],
+            theta+p*state, gamma_digamma[state]);
+          double eta = value.log_density - (area ? log_length[s] : 0);
+          double* score = derivative.data() + (s*k+state)*p;
+          score[0] = value.first_score;
+          if (radial_count == 2) score[1] = value.second_score;
+          if (persistence_index >= 0) {
+            eta += a*x[s+nrow*persistence_index];
+            score[persistence_index] = x[s+nrow*persistence_index] - ratio*vx;
+          }
+          if (target_index >= 0) {
+            eta += theta[target_index+p*state]*x[s+nrow*target_index];
+            score[target_index] = x[s+nrow*target_index] - active[s]*ratio*(b+a*c);
+          }
+          emission[s*k+state] = eta-log_angular_z;
+          if (!std::isfinite(emission[s*k+state]))
+            throw std::runtime_error("Nonfinite exact step-family emission.");
+          continue;
+        }
         std::vector<double> weighted(count);
+        if (radial_count) radial.resize(count);
         double case_eta = 0;
         for (int row = 0; row < count; ++row) {
           double eta = 0;
-          for (int v = 0; v < p; ++v) eta += x[first+row+nrow*v] * theta[v+p*state];
+          for (int v = radial_count; v < p; ++v)
+            eta += x[first+row+nrow*v] * theta[v+p*state];
+          if (radial_count) {
+            const int j = first+row;
+            radial[row] = radial_density(family, length[j], log_length[j],
+              theta+p*state, gamma_digamma[state]);
+            eta += radial[row].log_density - (area ? log_length[j] : 0);
+            if (!std::isfinite(eta))
+              throw std::runtime_error("Nonfinite step-family kernel.");
+          }
           if (row == 0) case_eta = eta;
           weighted[row] = eta - logw[first+row];
         }
         const double denominator = log_sum(weighted);
         emission[s*k+state] = case_eta - denominator + std::log(count-1.0);
-        for (int v = 0; v < p; ++v) {
+        if (radial_count) {
+          double first_mean = 0, second_mean = 0;
+          for (int row = 0; row < count; ++row) {
+            const double weight = std::exp(weighted[row]-denominator);
+            first_mean += weight*radial[row].first_score;
+            second_mean += weight*radial[row].second_score;
+          }
+          derivative[(s*k+state)*p] = radial[0].first_score-first_mean;
+          if (radial_count == 2)
+            derivative[(s*k+state)*p+1] = radial[0].second_score-second_mean;
+        }
+        for (int v = radial_count; v < p; ++v) {
           double mean = 0;
           for (int row = 0; row < count; ++row)
             mean += std::exp(weighted[row]-denominator) * x[first+row+nrow*v];
@@ -392,19 +474,25 @@ SEXP objective_impl(SEXP theta_, SEXP x_, SEXP logw_,
 
 extern "C" SEXP behavSSF_objective(SEXP theta, SEXP x, SEXP logw,
                                     SEXP starts, SEXP sizes, SEXP segments, SEXP k) {
-  return objective_impl(theta,x,logw,starts,sizes,segments,k,R_NilValue);
+  return objective_impl(theta,x,logw,starts,sizes,segments,k,R_NilValue,R_NilValue);
 }
 extern "C" SEXP behavSSF_exact_objective(SEXP theta, SEXP x, SEXP segments,
                                           SEXP k, SEXP context) {
-  return objective_impl(theta,x,R_NilValue,R_NilValue,R_NilValue,segments,k,context);
+  return objective_impl(theta,x,R_NilValue,R_NilValue,R_NilValue,segments,k,context,R_NilValue);
 }
 
-extern "C" SEXP behavSSF_simulate(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern "C" SEXP behavSSF_family_objective(SEXP theta, SEXP x, SEXP logw,
+    SEXP starts, SEXP sizes, SEXP segments, SEXP k, SEXP family) {
+  return objective_impl(theta,x,logw,starts,sizes,segments,k,R_NilValue,family);
+}
+
+extern "C" SEXP behavSSF_simulate(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef methods[] = {
   {"behavSSF_objective", (DL_FUNC) &behavSSF_objective, 7},
   {"behavSSF_exact_objective", (DL_FUNC) &behavSSF_exact_objective, 5},
-  {"behavSSF_simulate", (DL_FUNC) &behavSSF_simulate, 7},
+  {"behavSSF_family_objective", (DL_FUNC) &behavSSF_family_objective, 8},
+  {"behavSSF_simulate", (DL_FUNC) &behavSSF_simulate, 8},
   {NULL, NULL, 0}
 };
 extern "C" void R_init_behavSSF(DllInfo* dll) {

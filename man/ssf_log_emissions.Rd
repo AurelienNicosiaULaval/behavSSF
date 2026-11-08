@@ -8,7 +8,8 @@ ssf_log_emissions(
   data,
   formula,
   coefficients,
-  normalization = c("importance", "exact")
+  normalization = c("importance", "exact"),
+  step_family = NULL
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ in columns. Row names must exactly match the design column names.}
 
 \item{normalization}{importance uses the published approximation; exact
 uses observed ssf_steps and the analytic canonical-kernel normaliser.}
+
+\item{step_family}{Optional length family, as in \code{\link[=fit_ssf]{fit_ssf()}}. Coefficients
+use the named natural parameters returned by that fit.}
 }
 \value{
 A matrix of log emission densities, one row per stratum.

@@ -7,12 +7,15 @@
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/articles/index.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/articles/reference-workflow.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-hwange.html</loc></url>
+<url><loc>https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-state-count.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/authors.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/index.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/news/index.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/angular_parameters.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/assess_taxonomy.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_solutions.html</loc></url>
+<url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_state_labels.html</loc></url>
+<url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/compare_ssf_states.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/convert_density_measure.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/convert_movement_coefficients.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/decode_ssf_diel.html</loc></url>
@@ -25,13 +28,17 @@
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/movement_diagnostics.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/movement_metrics.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/plot.ssf_fit.html</loc></url>
+<url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/plot.ssf_state_comparison.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/plot_ssf_changes.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/prepare_ssf_data.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/prepare_ssf_steps.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/simulate_ssf.html</loc></url>
+<url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_blocks.html</loc></url>
+<url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_contrast.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_log_emissions.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_log_normalizer.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_taxonomy.html</loc></url>
 <url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.html</loc></url>
+<url><loc>https://aureliennicosiaulaval.github.io/behavSSF/reference/theme_ssf.html</loc></url>
 </urlset>
 

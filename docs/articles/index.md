@@ -5,6 +5,9 @@
 - [Behavioural states of a Hwange
   zebra](https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-hwange.md):
 
+- [Choose the number of states with your own
+  taxonomy](https://aureliennicosiaulaval.github.io/behavSSF/articles/zebra-state-count.md):
+
 - [When two fits label the same deer track
   differently](https://aureliennicosiaulaval.github.io/behavSSF/articles/deer-restarts.md):
 

@@ -26,7 +26,8 @@ fit_guided_ssf(
   score_tolerance = 0.01,
   normalization = c("importance", "exact"),
   step_ar = FALSE,
-  taxonomies = NULL
+  taxonomies = NULL,
+  step_family = NULL
 )
 ```
 
@@ -77,6 +78,11 @@ fit_guided_ssf(
   [`ssf_taxonomy()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_taxonomy.md)
   specifications and/or built-in taxonomy names. Include `"Other"`
   explicitly to try the one-state fallback in a custom sequence.
+
+- step_family:
+
+  Optional length family passed to
+  [`fit_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/fit_ssf.md).
 
 ## Value
 

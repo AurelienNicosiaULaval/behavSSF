@@ -11,7 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.align = "center",
-                     out.width = "100%")
+                     out.width = "100%", dev.args = list(bg = "white"))
 ```
 
 When does a zebra travel, forage or rest? We use the GPS track of one plains
@@ -19,6 +19,11 @@ zebra in Hwange National Park, Zimbabwe, and the rules proposed by
 [Bouderbala, Nicosia and Fortin (2026)](https://doi.org/10.1371/journal.pone.0360547).
 The package includes 6,377 observed steps, each 30 minutes long. Gaps separate
 the track into 28 segments.
+
+The original tracking study is [Michelot et al. (2020)](https://doi.org/10.1111/biom.13170).
+Simon Chamaillé-Jammes provided the GPS track and vegetation raster used in
+the [Klappstein et al. archive](https://doi.org/10.5281/zenodo.7872602),
+distributed under CC BY 4.0.
 
 ## Fit the models
 
@@ -82,6 +87,8 @@ marks where the excerpt starts.
 
 ```{r track, fig.width=7, fig.height=4.8, fig.alt="Map of 48 hours of the Hwange zebra track coloured by inferred state. An open circle marks the start."}
 library(ggplot2)
+theme_set(theme_ssf())
+knitr::opts_chunk$set(dev.args = list(bg = "white"))
 
 longest <- names(which.max(table(zebra$ID)))
 plot(result, type = "track", segment = longest, step_range = c(1, 96)) +
@@ -97,7 +104,36 @@ at that step.
 plot(result, type = "posterior", segment = longest, step_range = c(1, 96))
 ```
 
+## Change the step-length distribution
+
+The same labels can be applied to different movement models. Here we give
+the three states names based on their mean step length. The labels describe
+the lengths estimated by the model at the 30-minute sampling interval.
+
+```{r length-families}
+length_regimes <- ssf_taxonomy(
+  "length_regimes", c("Short", "Intermediate", "Long"),
+  formula = ~ cos_angle + cos_diff_theta_to_target
+)
+length_fit <- fit_guided_ssf(
+  steps, convention = "area", taxonomies = list(length_regimes),
+  step_family = "weibull", normalization = "exact",
+  n_starts = 8, short_iter = 100, long_iter = 900, seed = 1729
+)
+summary(length_fit)
+```
+
+Use `step_family = "gamma"` to fit the same taxonomy with a gamma
+distribution. The other choices are `"lognormal"`, `"inverse_gaussian"`,
+`"halfnormal"` and `"exponential"`. The family supplies the length
+distribution, so the formula gives the turning and target terms. To add
+vegetation at the endpoint, use case-control rows with that covariate on
+both used and available endpoints and choose importance normalisation.
+
 The track and habitat raster come from the article's
 [Figshare supplement](https://doi.org/10.6084/m9.figshare.34077912.v2).
 The original GPS data are also available in the
 [archive of Klappstein, Thomas and Michelot](https://doi.org/10.5281/zenodo.7872602).
+
+To compare different numbers of states with your own labels and ecological
+rules, see [Choose the number of states with your own taxonomy](zebra-state-count.html).

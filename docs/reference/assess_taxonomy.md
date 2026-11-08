@@ -5,7 +5,12 @@ than foraging (or encamped). For HDT, the unadjusted 95 percent Wald
 interval of the target coefficient must be entirely positive. A
 significantly negative target coefficient does not establish attraction.
 Numerical failure and failed ecological rules remain distinct in the
-returned checks.
+returned checks. A custom taxonomy requires its formula terms to occur
+in the fitted model; additional fitted terms are allowed. Passing the
+numerical screen does not rule out weakly identified states. Inspect
+state profiles and uncertainty, and compare independently polished fits
+with
+[`diagnose_ssf_restarts()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/diagnose_ssf_restarts.md).
 
 ## Usage
 
@@ -20,6 +25,9 @@ assess_taxonomy(
   min_mean_gap = 0,
   score_tolerance = 0.01
 )
+
+# S3 method for class 'ssf_assessment'
+print(x, ...)
 ```
 
 ## Arguments
@@ -59,8 +67,17 @@ assess_taxonomy(
 
 - score_tolerance:
 
-  Maximum absolute objective gradient for accepting a numerically
-  stationary fit. Missing or nonfinite scores fail this check.
+  Maximum absolute curvature-scaled objective gradient for accepting a
+  numerically stationary fit. Missing or nonfinite scores fail this
+  check.
+
+- x:
+
+  An assessment returned by `assess_taxonomy()`.
+
+- ...:
+
+  Reserved for S3 methods.
 
 ## Value
 
