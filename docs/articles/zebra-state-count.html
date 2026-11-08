@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9010</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9011</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -605,6 +605,89 @@ zero would support an additional positive-difference rule, conditional
 on this fitted model. Deciding to add that rule after seeing these
 results makes it exploratory. It does not provide a significance test
 corrected for choosing the state count, taxonomy or solution.</p>
+</div>
+<div class="section level2">
+<h2 id="finish-with-ecological-labels">Finish with ecological labels<a class="anchor" aria-label="anchor" href="#finish-with-ecological-labels"></a>
+</h2>
+<p>The length labels make the comparison easy to read. We can go further
+by requiring both a movement signature and an environmental association.
+For illustration, we define local movement, grassland movement and
+persistent grassland travel. The two longer states must select grassland
+relative to each of the three other endpoint habitats. Each successive
+state must have a mean step more than twice as long and greater
+directional persistence, supported by a coefficient contrast.</p>
+<p>This is an exploratory taxonomy suggested by the fitted pattern. It
+illustrates how to write ecological requirements; it is not an
+independent test of these behaviours. The factor <code>habitat</code>
+refers to the endpoint. Grassland is its reference level.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"zebra-ecological-taxonomy.R"</span>,</span>
+<span>  package <span class="op">=</span> <span class="st">"behavSSF"</span>, mustWork <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">zebra_ecological_taxonomy</span></span>
+<span><span class="co">#&gt; function () </span></span>
+<span><span class="co">#&gt; {</span></span>
+<span><span class="co">#&gt;     ssf_taxonomy("grassland_movement", c("Local movement", "Grassland movement", </span></span>
+<span><span class="co">#&gt;         "Persistent grassland travel"), formula = ~cos_angle + </span></span>
+<span><span class="co">#&gt;         cos_diff_theta_to_target + habitat, order_by = "mean_step", </span></span>
+<span><span class="co">#&gt;         rules = function(s) {</span></span>
+<span><span class="co">#&gt;             local &lt;- "Local movement"</span></span>
+<span><span class="co">#&gt;             middle &lt;- "Grassland movement"</span></span>
+<span><span class="co">#&gt;             travel &lt;- "Persistent grassland travel"</span></span>
+<span><span class="co">#&gt;             habitats &lt;- c("habitatbushed grassland", "habitatbushland", </span></span>
+<span><span class="co">#&gt;                 "habitatwoodland")</span></span>
+<span><span class="co">#&gt;             c(separated_lengths = s$metrics[middle, "mean_step"] &gt; </span></span>
+<span><span class="co">#&gt;                 2 * s$metrics[local, "mean_step"] &amp;&amp; s$metrics[travel, </span></span>
+<span><span class="co">#&gt;                 "mean_step"] &gt; 2 * s$metrics[middle, "mean_step"], </span></span>
+<span><span class="co">#&gt;                 increasing_persistence = ssf_contrast(s, "cos_angle", </span></span>
+<span><span class="co">#&gt;                   local, middle)$lower &gt; 0 &amp;&amp; ssf_contrast(s, </span></span>
+<span><span class="co">#&gt;                   "cos_angle", middle, travel)$lower &gt; 0, middle_grassland_selection = all(ssf_contrast(s, </span></span>
+<span><span class="co">#&gt;                   habitats, middle)$upper &lt; 0), travel_grassland_selection = all(ssf_contrast(s, </span></span>
+<span><span class="co">#&gt;                   habitats, travel)$upper &lt; 0))</span></span>
+<span><span class="co">#&gt;         })</span></span>
+<span><span class="co">#&gt; }</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ecology</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/assess_taxonomy.html">assess_taxonomy</a></span><span class="op">(</span><span class="va">fit3</span>, <span class="fu">zebra_ecological_taxonomy</span><span class="op">(</span><span class="op">)</span>, convention <span class="op">=</span> <span class="st">"area"</span><span class="op">)</span></span>
+<span><span class="va">ecology</span><span class="op">$</span><span class="va">checks</span></span>
+<span><span class="co">#&gt;                  converged                    hessian </span></span>
+<span><span class="co">#&gt;                       TRUE                       TRUE </span></span>
+<span><span class="co">#&gt;                      score               valid_kernel </span></span>
+<span><span class="co">#&gt;                       TRUE                       TRUE </span></span>
+<span><span class="co">#&gt;                 transition                  occupancy </span></span>
+<span><span class="co">#&gt;                       TRUE                       TRUE </span></span>
+<span><span class="co">#&gt;                state_order          separated_lengths </span></span>
+<span><span class="co">#&gt;                       TRUE                       TRUE </span></span>
+<span><span class="co">#&gt;     increasing_persistence middle_grassland_selection </span></span>
+<span><span class="co">#&gt;                       TRUE                       TRUE </span></span>
+<span><span class="co">#&gt; travel_grassland_selection </span></span>
+<span><span class="co">#&gt;                       TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">state_colours</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Local movement"</span> <span class="op">=</span> <span class="st">"#784B8B"</span>,</span>
+<span>  <span class="st">"Grassland movement"</span> <span class="op">=</span> <span class="st">"#B6501C"</span>, <span class="st">"Persistent grassland travel"</span> <span class="op">=</span> <span class="st">"#166484"</span><span class="op">)</span></span>
+<span><span class="va">effect_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cos_angle"</span>, <span class="st">"cos_diff_theta_to_target"</span>,</span>
+<span>  <span class="st">"habitatbushed grassland"</span>, <span class="st">"habitatbushland"</span>, <span class="st">"habitatwoodland"</span><span class="op">)</span></span>
+<span><span class="va">effect_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Previous heading"</span>, <span class="st">"Direction to grassland target"</span>,</span>
+<span>  <span class="st">"Bushed grassland vs grassland"</span>, <span class="st">"Bushland vs grassland"</span>, <span class="st">"Woodland vs grassland"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">fit3</span>, panel <span class="op">=</span> <span class="st">"coefficients"</span>, assessment <span class="op">=</span> <span class="va">ecology</span>,</span>
+<span>  terms <span class="op">=</span> <span class="va">effect_terms</span>, term_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="va">effect_names</span>, <span class="va">effect_terms</span><span class="op">)</span>,</span>
+<span>  colours <span class="op">=</span> <span class="va">state_colours</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zebra-state-count_files/figure-html/ecological-effects-1.png" class="r-plt" alt="State-specific coefficient intervals for directional persistence, direction to a grassland target and three endpoint habitats compared with grassland." width="100%" style="display: block; margin: auto;"></p>
+<p>Negative habitat coefficients support greater selection for grassland
+relative to that endpoint habitat, conditional on the other model terms.
+The two longer states satisfy this requirement. The target-direction
+intervals include zero. We therefore describe grassland selection,
+rather than habitat-directed travelling. Selection of an endpoint
+habitat and orientation towards a target fixed at the start of a step
+are different quantities.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">fit3</span>, assessment <span class="op">=</span> <span class="va">ecology</span>, step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span>,</span>
+<span>  coord_unit <span class="op">=</span> <span class="st">"km"</span>, segment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">fit3</span><span class="op">$</span><span class="va">observations</span><span class="op">$</span><span class="va">ID</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  step_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">96</span><span class="op">)</span>, terms <span class="op">=</span> <span class="st">"cos_angle"</span>, colours <span class="op">=</span> <span class="va">state_colours</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zebra-state-count_files/figure-html/ecological-habitat-overview-1.png" class="r-plt" alt="Ecological labels linked to a 48-hour trajectory, observed movements and directional persistence in the three-state habitat model." width="100%" style="display: block; margin: auto;"></p>
+<p>The map tells us where the inferred states occur. The distributions
+describe their movements. The coefficient intervals show which
+environmental and directional claims the model supports. Reading them
+together makes the state labels useful to an ecologist while keeping
+their limits visible.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

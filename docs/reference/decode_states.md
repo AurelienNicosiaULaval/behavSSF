@@ -47,13 +47,13 @@ decode_states(log(matrix(c(.8, .2, .3, .7), 2, byrow = TRUE)),
               matrix(c(.9, .1, .1, .9), 2, byrow = TRUE))
 #> $log_likelihood
 #> [1] -1.599488
-#> 
+#>
 #> $state
 #> [1] 1 1
-#> 
+#>
 #> $posterior
 #>           [,1]      [,2]
 #> [1,] 0.6732673 0.3267327
 #> [2,] 0.5495050 0.4504950
-#> 
+#>
 ```

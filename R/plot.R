@@ -6,10 +6,12 @@
 #' fitted model and stop at segment boundaries.
 #'
 #' @param x An object from [fit_ssf()] or [fit_guided_ssf()].
-#' @param ... Reserved for the generic.
+#' @param ... For `type = "states"`, arguments passed to [plot_ssf_states()].
+#'   Otherwise reserved for the generic.
 #' @param type Use `"track"` for a map, `"posterior"` for state probabilities,
 #'   or `"auto"` for a map when the chosen coordinate columns are available
-#'   and a probability plot otherwise.
+#'   and a probability plot otherwise. `"states"` combines the ecological
+#'   interpretation, observed movement distributions and estimated effects.
 #' @param segment Optional segment identifiers from the fitted `ID` column.
 #' @param step_range Optional pair giving the first and last step to draw,
 #'   counted in fitted order after selecting segments.
@@ -18,19 +20,23 @@
 #'   common units.
 #' @return A ggplot object.
 #' @export
-plot.ssf_fit <- function(x, ..., type = c("auto", "track", "posterior"),
+plot.ssf_fit <- function(x, ..., type = c("auto", "track", "posterior", "states"),
                          segment = NULL, step_range = NULL,
                          coords = c("x0", "y0", "x", "y")) {
-  .plot_ssf(x, colnames(x$coefficients), match.arg(type), segment, step_range, coords)
+  type <- match.arg(type)
+  if (type == "states") return(plot_ssf_states(x, ..., segment = segment, step_range = step_range, coords = coords))
+  .plot_ssf(x, colnames(x$coefficients), type, segment, step_range, coords)
 }
 
 #' @rdname plot.ssf_fit
 #' @export
-plot.guided_ssf <- function(x, ..., type = c("auto", "track", "posterior"),
+plot.guided_ssf <- function(x, ..., type = c("auto", "track", "posterior", "states"),
                             segment = NULL, step_range = NULL,
                             coords = c("x0", "y0", "x", "y")) {
   if (is.null(x$fit)) .stop("No selected fit to plot. Use summary() to inspect the candidates.")
-  .plot_ssf(x$fit, x$assessment$labels, match.arg(type), segment, step_range, coords)
+  type <- match.arg(type)
+  if (type == "states") return(plot_ssf_states(x, ..., segment = segment, step_range = step_range, coords = coords))
+  .plot_ssf(x$fit, x$assessment$labels, type, segment, step_range, coords)
 }
 
 .has_ssf_coordinates <- function(steps, coords) {
@@ -39,7 +45,7 @@ plot.guided_ssf <- function(x, ..., type = c("auto", "track", "posterior"),
     all(vapply(steps[coords], function(z) is.numeric(z) && all(is.finite(z)), logical(1)))
 }
 
-.plot_ssf <- function(fit, labels, type, segment, step_range, coords) {
+.plot_ssf <- function(fit, labels, type, segment, step_range, coords, palette = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) .stop("Install ggplot2 to plot the fit.")
   observations <- fit$observations
   rows <- seq_len(nrow(observations))
@@ -94,8 +100,8 @@ plot.guided_ssf <- function(x, ..., type = c("auto", "track", "posterior"),
       ggplot2::labs(title = "Smoothed state probabilities", x = "Step in fitted order",
                    y = "Probability")
   }
-  palette <- c("#166484", "#B6501C", "#784B8B", "#21765A", "#9E3D60", "#526372")
-  p + ggplot2::scale_colour_manual(values = palette[seq_along(labels)], drop = FALSE,
+  if (is.null(palette)) palette <- c("#166484", "#B6501C", "#784B8B", "#21765A", "#9E3D60", "#526372")[seq_along(labels)]
+  p + ggplot2::scale_colour_manual(values = palette, drop = FALSE,
                                    name = NULL) +
     theme_ssf() + ggplot2::theme(legend.position = "bottom")
 }

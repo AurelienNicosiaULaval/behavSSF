@@ -1,6 +1,6 @@
 Package: behavSSF
 Title: Guided Behavioural State Assessment for Step Selection Models
-Version: 0.1.0.9010
+Version: 0.1.0.9011
 Date: 2026-11-08
 Authors@R: c(
     person("Aurélien", "Nicosia", email = "aurelien.nicosia@mat.ulaval.ca",
@@ -26,7 +26,7 @@ License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: stats, parallel
-Suggests: testthat (>= 3.0.0), knitr, rmarkdown, ggplot2, patchwork
+Suggests: testthat (>= 3.0.0), knitr, rmarkdown, ggplot2, patchwork, ggcircular (>= 0.1.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0

@@ -1,5 +1,22 @@
 # Changelog
 
+## behavSSF 0.1.0.9011
+
+- Read a state’s decoded share, movement signature and persistence
+  together with
+  [`ssf_state_summary()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_state_summary.md).
+- Use `plot(result, type = "states")` for an ecological overview linking
+  the taxonomy labels, trajectory, observed movement distributions and
+  coefficient intervals.
+- Draw the overview’s table, map, distributions or coefficients
+  separately with
+  [`plot_ssf_states()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot_ssf_states.md).
+- Compare overlaid step-length densities and circular turning-angle
+  densities with ggcircular; display conditional 95% intervals for each
+  state and model effect.
+- Put the ecological interpretation at the end of the Hwange zebra
+  worked example.
+
 ## behavSSF 0.1.0.9010
 
 - Use a shared white theme for package plots and worked examples with

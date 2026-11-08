@@ -117,6 +117,48 @@ plot(result, type = "posterior", segment = longest, step_range = c(1, 96))
 ![Smoothed probabilities of travelling, foraging and resting over the
 same 96 steps.](zebra-hwange_files/figure-html/posterior-1.png)
 
+## Read the ecological states together
+
+The useful result is a set of states that we can interpret, with the
+measurements that support those names. This view brings them together.
+Colours follow the labels in every panel. The map uses the same 48-hour
+excerpt; the table and distributions use all 6,377 observed steps.
+
+``` r
+
+library(patchwork)
+plot(result, type = "states", step_scale = 1000, step_unit = "m",
+     coord_unit = "km", segment = longest, step_range = c(1, 96))
+```
+
+![Ecological overview combining state counts, the zebra trajectory,
+step-length and turning distributions, and coefficient intervals with
+consistent state
+colours.](zebra-hwange_files/figure-html/ecological-overview-1.png)
+
+Travelling combines long steps with strong persistence in the previous
+heading. Foraging has intermediate lengths and weaker persistence.
+Resting has short steps and little directional persistence. These are
+the operational meanings of the article’s labels at a 30-minute
+interval. The GPS data alone do not establish that the animal was
+feeding or asleep.
+
+The overlaid densities show observed movements grouped by their decoded
+state. The distance panel uses a log10 scale with a common smoothing
+bandwidth. The circular panel uses `ggcircular`: zero means straight
+ahead, and 180 degrees means a reversal. Its bandwidth is shared by all
+states. They help read the classification, but do not independently
+validate it. Means and SDs in the table come from the fitted intrinsic
+movement kernel; they are not the empirical means of those groups. The
+stay probability and expected run length describe the fitted transition
+model.
+
+To export the table, use
+`ssf_state_summary(result, step_scale = 1000, step_unit = "m")`. For a
+separate figure, use `plot_ssf_states(result, panel = "distributions")`
+or `panel = "coefficients"`. These functions also work with a fitted
+model and an accepted custom taxonomy assessment.
+
 ## Change the step-length distribution
 
 The same labels can be applied to different movement models. Here we
@@ -138,20 +180,20 @@ length_fit <- fit_guided_ssf(
 summary(length_fit)
 #> Candidate taxonomies in the order tried
 #>   length_regimes (Short / Intermediate / Long) [Selected]
-#> 
+#>
 #> HMM-SSF summary
 #> 6377 observed steps in 28 segment(s)
-#> Normalisation: exact | density measure: area 
-#> Step-length family: weibull 
-#> Log likelihood: 12084 
-#> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 3.833e-13 
-#> 
+#> Normalisation: exact | density measure: area
+#> Step-length family: weibull
+#> Log likelihood: 12084
+#> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 3.833e-13
+#>
 #> States (Viterbi assignments)
 #>         state n_steps fraction mean_step persistence
 #>         Short    2786   0.4369   0.03726    -0.05815
 #>  Intermediate    2732   0.4284   0.16366     0.61340
 #>          Long     859   0.1347   0.68498     2.31714
-#> 
+#>
 #> Step-selection coefficients
 #>         state                     term estimate std_error
 #>         Short               step_shape  0.98177  0.018046
@@ -166,7 +208,7 @@ summary(length_fit)
 #>          Long               step_scale  0.76300  0.033531
 #>          Long                cos_angle  2.31714  0.153591
 #>          Long cos_diff_theta_to_target  0.14002  0.087851
-#> 
+#>
 #> Transition probabilities (rows are origin states)
 #>               Short Intermediate    Long
 #> Short        0.7954       0.1874 0.01721

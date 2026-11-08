@@ -13,7 +13,7 @@ fitted model and stop at segment boundaries."><meta property="og:image" content=
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9010</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9011</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,7 @@ fitted model and stop at segment boundaries.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"track"</span>, <span class="st">"posterior"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"track"</span>, <span class="st">"posterior"</span>, <span class="st">"states"</span><span class="op">)</span>,</span>
 <span>  segment <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  step_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x0"</span>, <span class="st">"y0"</span>, <span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span></span>
@@ -68,7 +68,7 @@ fitted model and stop at segment boundaries.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"track"</span>, <span class="st">"posterior"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"track"</span>, <span class="st">"posterior"</span>, <span class="st">"states"</span><span class="op">)</span>,</span>
 <span>  segment <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  step_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x0"</span>, <span class="st">"y0"</span>, <span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span></span>
@@ -84,13 +84,15 @@ fitted model and stop at segment boundaries.</p>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Reserved for the generic.</p></dd>
+<dd><p>For <code>type = "states"</code>, arguments passed to <code><a href="plot_ssf_states.html">plot_ssf_states()</a></code>.
+Otherwise reserved for the generic.</p></dd>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>Use <code>"track"</code> for a map, <code>"posterior"</code> for state probabilities,
 or <code>"auto"</code> for a map when the chosen coordinate columns are available
-and a probability plot otherwise.</p></dd>
+and a probability plot otherwise. <code>"states"</code> combines the ecological
+interpretation, observed movement distributions and estimated effects.</p></dd>
 
 
 <dt id="arg-segment">segment<a class="anchor" aria-label="anchor" href="#arg-segment"></a></dt>

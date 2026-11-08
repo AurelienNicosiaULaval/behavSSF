@@ -21,10 +21,10 @@ emissions <- matrix(c(.2, .8, .9, .1, .3, .7), 3, byrow = TRUE)
 decode_states(log(emissions), transition, initial = c(.4, .6))
 #> $log_likelihood
 #> [1] -2.325731
-#> 
+#>
 #> $state
 #> [1] 2 1 1
-#> 
+#>
 #> $posterior
 #>           [,1]      [,2]
 #> [1,] 0.2331750 0.7668250
@@ -55,12 +55,12 @@ print(fit)
 #> Homogeneous HMM-SSF: 1 state(s), 20 observed steps in 1 segment(s)
 #> Log likelihood: -11.2467 | converged: TRUE | positive Hessian: TRUE
 c(estimate = coef(fit)[1, 1], reference = log(5 / 15))
-#>  estimate reference 
+#>  estimate reference
 #> -1.098612 -1.098612
 fit$starts
 #>      phase start objective convergence error warnings
-#> 1 baseline     0   11.2467           0               
-#> 2    short     1   11.2467           0               
+#> 1 baseline     0   11.2467           0
+#> 2    short     1   11.2467           0
 #> 3     long     1   11.2467           0
 ```
 
@@ -167,17 +167,17 @@ model <- fit_ssf(choices, n_states = 1L, seed = 319)
 segments <- data.frame(ID = 1L, x = 0, y = 0, bearing = 0, n_steps = 100L)
 simulations <- simulate_ssf(model, segments, n_sims = 10L, seed = 320)
 movement_diagnostics(simulations$tracks[[1]], segments, lags = c(1, 2, 4))
-#>                    mean_step                      sd_step 
-#>                   0.70566757                   0.49694835 
-#>                     q95_step          short_step_fraction 
-#>                   1.57404925                   0.01000000 
-#>                mean_cos_turn        lag1_step_correlation 
-#>                  -0.08304845                   0.03210831 
-#>                short_run_q95 median_endpoint_displacement 
-#>                   1.00000000                   7.37675677 
-#>        q90_maximum_excursion                    msd_lag_1 
-#>                  10.11641562                   0.74245481 
-#>                    msd_lag_2                    msd_lag_4 
+#>                    mean_step                      sd_step
+#>                   0.70566757                   0.49694835
+#>                     q95_step          short_step_fraction
+#>                   1.57404925                   0.01000000
+#>                mean_cos_turn        lag1_step_correlation
+#>                  -0.08304845                   0.03210831
+#>                short_run_q95 median_endpoint_displacement
+#>                   1.00000000                   7.37675677
+#>        q90_maximum_excursion                    msd_lag_1
+#>                  10.11641562                   0.74245481
+#>                    msd_lag_2                    msd_lag_4
 #>                   1.33308951                   2.37394231
 ```
 
@@ -218,17 +218,17 @@ ssf_log_emissions(steps, ~ step + log_step + cos_angle,
 #> 4 -0.7188064
 exact_simulations <- simulate_ssf(exact_model, segments, n_sims = 10L, seed = 322)
 movement_diagnostics(exact_simulations$tracks[[1]], segments, lags = c(1, 2, 4))
-#>                    mean_step                      sd_step 
-#>                   0.74843606                   0.50813191 
-#>                     q95_step          short_step_fraction 
-#>                   1.65006853                   0.02000000 
-#>                mean_cos_turn        lag1_step_correlation 
-#>                  -0.10920458                   0.03515177 
-#>                short_run_q95 median_endpoint_displacement 
-#>                   1.00000000                   4.93519086 
-#>        q90_maximum_excursion                    msd_lag_1 
-#>                  10.27076117                   0.81577260 
-#>                    msd_lag_2                    msd_lag_4 
+#>                    mean_step                      sd_step
+#>                   0.74843606                   0.50813191
+#>                     q95_step          short_step_fraction
+#>                   1.65006853                   0.02000000
+#>                mean_cos_turn        lag1_step_correlation
+#>                  -0.10920458                   0.03515177
+#>                short_run_q95 median_endpoint_displacement
+#>                   1.00000000                   4.93519086
+#>        q90_maximum_excursion                    msd_lag_1
+#>                  10.27076117                   0.81577260
+#>                    msd_lag_2                    msd_lag_4
 #>                   1.60653289                   3.03652364
 ```
 

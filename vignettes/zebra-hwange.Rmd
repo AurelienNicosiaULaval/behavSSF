@@ -104,6 +104,39 @@ at that step.
 plot(result, type = "posterior", segment = longest, step_range = c(1, 96))
 ```
 
+## Read the ecological states together
+
+The useful result is a set of states that we can interpret, with the
+measurements that support those names. This view brings them together.
+Colours follow the labels in every panel. The map uses the same 48-hour
+excerpt; the table and distributions use all 6,377 observed steps.
+
+```{r ecological-overview, fig.width=12, fig.height=10, fig.alt="Ecological overview combining state counts, the zebra trajectory, step-length and turning distributions, and coefficient intervals with consistent state colours."}
+library(patchwork)
+plot(result, type = "states", step_scale = 1000, step_unit = "m",
+     coord_unit = "km", segment = longest, step_range = c(1, 96))
+```
+
+Travelling combines long steps with strong persistence in the previous
+heading. Foraging has intermediate lengths and weaker persistence.
+Resting has short steps and little directional persistence. These are the
+operational meanings of the article's labels at a 30-minute interval.
+The GPS data alone do not establish that the animal was feeding or asleep.
+
+The overlaid densities show observed movements grouped by their decoded state.
+The distance panel uses a log10 scale with a common smoothing bandwidth.
+The circular panel uses `ggcircular`: zero means straight ahead, and 180
+degrees means a reversal. Its bandwidth is shared by all states.
+They help read the classification, but do not independently validate it.
+Means and SDs in the table come from the fitted intrinsic movement kernel;
+they are not the empirical means of those groups. The stay probability
+and expected run length describe the fitted transition model.
+
+To export the table, use `ssf_state_summary(result, step_scale = 1000,
+step_unit = "m")`. For a separate figure, use `plot_ssf_states(result,
+panel = "distributions")` or `panel = "coefficients"`. These functions also
+work with a fitted model and an accepted custom taxonomy assessment.
+
 ## Change the step-length distribution
 
 The same labels can be applied to different movement models. Here we give

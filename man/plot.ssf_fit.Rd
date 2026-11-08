@@ -8,7 +8,7 @@
 \method{plot}{ssf_fit}(
   x,
   ...,
-  type = c("auto", "track", "posterior"),
+  type = c("auto", "track", "posterior", "states"),
   segment = NULL,
   step_range = NULL,
   coords = c("x0", "y0", "x", "y")
@@ -17,7 +17,7 @@
 \method{plot}{guided_ssf}(
   x,
   ...,
-  type = c("auto", "track", "posterior"),
+  type = c("auto", "track", "posterior", "states"),
   segment = NULL,
   step_range = NULL,
   coords = c("x0", "y0", "x", "y")
@@ -26,11 +26,13 @@
 \arguments{
 \item{x}{An object from \code{\link[=fit_ssf]{fit_ssf()}} or \code{\link[=fit_guided_ssf]{fit_guided_ssf()}}.}
 
-\item{...}{Reserved for the generic.}
+\item{...}{For \code{type = "states"}, arguments passed to \code{\link[=plot_ssf_states]{plot_ssf_states()}}.
+Otherwise reserved for the generic.}
 
 \item{type}{Use \code{"track"} for a map, \code{"posterior"} for state probabilities,
 or \code{"auto"} for a map when the chosen coordinate columns are available
-and a probability plot otherwise.}
+and a probability plot otherwise. \code{"states"} combines the ecological
+interpretation, observed movement distributions and estimated effects.}
 
 \item{segment}{Optional segment identifiers from the fitted \code{ID} column.}
 

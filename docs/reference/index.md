@@ -37,6 +37,10 @@
   : Plot fitted behavioural states
 - [`theme_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/theme_ssf.md)
   : A common white theme for movement plots
+- [`ssf_state_summary()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_state_summary.md)
+  : Read the movement signature of each inferred state
+- [`plot_ssf_states()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot_ssf_states.md)
+  : Show how inferred states acquire an ecological interpretation
 
 ## Prepare steps and evaluate kernels
 

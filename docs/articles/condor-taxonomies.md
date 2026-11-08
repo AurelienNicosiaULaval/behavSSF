@@ -69,11 +69,11 @@ print(result)
 #> Candidate taxonomies in the order tried
 #>   flight_modes (Circling-like flight / Directed flight) [Selected]
 result$history$flight_modes$assessment$checks
-#>           converged             hessian               score        valid_kernel 
-#>                TRUE                TRUE                TRUE                TRUE 
-#>          transition           occupancy         state_order     persistence_gap 
-#>                TRUE                TRUE                TRUE                TRUE 
-#> forward_persistence 
+#>           converged             hessian               score        valid_kernel
+#>                TRUE                TRUE                TRUE                TRUE
+#>          transition           occupancy         state_order     persistence_gap
+#>                TRUE                TRUE                TRUE                TRUE
+#> forward_persistence
 #>                TRUE
 ```
 
@@ -204,7 +204,7 @@ knitr::kable(agreement)
 aligned <- agreement["Circling-like flight", "Thermalling proxy"] +
   agreement["Directed flight", "Gliding proxy"]
 round(tapply(gps$vertical_m_s, gps$state, median), 2)
-#> Circling-like flight      Directed flight 
+#> Circling-like flight      Directed flight
 #>                  0.4                 -0.4
 ```
 

@@ -283,7 +283,7 @@ changes$crosswalk
 #>   Short  2732         1897    2
 #>   Long      1          723 1020
 changes$mapping
-#>        Short Intermediate         Long 
+#>        Short Intermediate         Long
 #>      "Short"      "Short"       "Long"
 ```
 
@@ -361,11 +361,11 @@ length_and_woodland <- ssf_taxonomy(
 fit3 <- comparison$fits[["gamma::length_3"]]
 assessment <- assess_taxonomy(fit3, length_and_woodland, convention = "area")
 assessment$checks
-#>                converged                  hessian                    score 
-#>                     TRUE                     TRUE                     TRUE 
-#>             valid_kernel               transition                occupancy 
-#>                     TRUE                     TRUE                     TRUE 
-#>              state_order             length_ratio lower_woodland_selection 
+#>                converged                  hessian                    score
+#>                     TRUE                     TRUE                     TRUE
+#>             valid_kernel               transition                occupancy
+#>                     TRUE                     TRUE                     TRUE
+#>              state_order             length_ratio lower_woodland_selection
 #>                     TRUE                     TRUE                     TRUE
 assessment$reasons
 #> character(0)
@@ -427,3 +427,107 @@ zero would support an additional positive-difference rule, conditional
 on this fitted model. Deciding to add that rule after seeing these
 results makes it exploratory. It does not provide a significance test
 corrected for choosing the state count, taxonomy or solution.
+
+## Finish with ecological labels
+
+The length labels make the comparison easy to read. We can go further by
+requiring both a movement signature and an environmental association.
+For illustration, we define local movement, grassland movement and
+persistent grassland travel. The two longer states must select grassland
+relative to each of the three other endpoint habitats. Each successive
+state must have a mean step more than twice as long and greater
+directional persistence, supported by a coefficient contrast.
+
+This is an exploratory taxonomy suggested by the fitted pattern. It
+illustrates how to write ecological requirements; it is not an
+independent test of these behaviours. The factor `habitat` refers to the
+endpoint. Grassland is its reference level.
+
+``` r
+
+source(system.file("extdata", "zebra-ecological-taxonomy.R",
+  package = "behavSSF", mustWork = TRUE))
+zebra_ecological_taxonomy
+#> function ()
+#> {
+#>     ssf_taxonomy("grassland_movement", c("Local movement", "Grassland movement",
+#>         "Persistent grassland travel"), formula = ~cos_angle +
+#>         cos_diff_theta_to_target + habitat, order_by = "mean_step",
+#>         rules = function(s) {
+#>             local <- "Local movement"
+#>             middle <- "Grassland movement"
+#>             travel <- "Persistent grassland travel"
+#>             habitats <- c("habitatbushed grassland", "habitatbushland",
+#>                 "habitatwoodland")
+#>             c(separated_lengths = s$metrics[middle, "mean_step"] >
+#>                 2 * s$metrics[local, "mean_step"] && s$metrics[travel,
+#>                 "mean_step"] > 2 * s$metrics[middle, "mean_step"],
+#>                 increasing_persistence = ssf_contrast(s, "cos_angle",
+#>                   local, middle)$lower > 0 && ssf_contrast(s,
+#>                   "cos_angle", middle, travel)$lower > 0, middle_grassland_selection = all(ssf_contrast(s,
+#>                   habitats, middle)$upper < 0), travel_grassland_selection = all(ssf_contrast(s,
+#>                   habitats, travel)$upper < 0))
+#>         })
+#> }
+```
+
+``` r
+
+ecology <- assess_taxonomy(fit3, zebra_ecological_taxonomy(), convention = "area")
+ecology$checks
+#>                  converged                    hessian
+#>                       TRUE                       TRUE
+#>                      score               valid_kernel
+#>                       TRUE                       TRUE
+#>                 transition                  occupancy
+#>                       TRUE                       TRUE
+#>                state_order          separated_lengths
+#>                       TRUE                       TRUE
+#>     increasing_persistence middle_grassland_selection
+#>                       TRUE                       TRUE
+#> travel_grassland_selection
+#>                       TRUE
+```
+
+``` r
+
+state_colours <- c("Local movement" = "#784B8B",
+  "Grassland movement" = "#B6501C", "Persistent grassland travel" = "#166484")
+effect_terms <- c("cos_angle", "cos_diff_theta_to_target",
+  "habitatbushed grassland", "habitatbushland", "habitatwoodland")
+effect_names <- c("Previous heading", "Direction to grassland target",
+  "Bushed grassland vs grassland", "Bushland vs grassland", "Woodland vs grassland")
+plot_ssf_states(fit3, panel = "coefficients", assessment = ecology,
+  terms = effect_terms, term_labels = setNames(effect_names, effect_terms),
+  colours = state_colours)
+```
+
+![State-specific coefficient intervals for directional persistence,
+direction to a grassland target and three endpoint habitats compared
+with
+grassland.](zebra-state-count_files/figure-html/ecological-effects-1.png)
+
+Negative habitat coefficients support greater selection for grassland
+relative to that endpoint habitat, conditional on the other model terms.
+The two longer states satisfy this requirement. The target-direction
+intervals include zero. We therefore describe grassland selection,
+rather than habitat-directed travelling. Selection of an endpoint
+habitat and orientation towards a target fixed at the start of a step
+are different quantities.
+
+``` r
+
+plot_ssf_states(fit3, assessment = ecology, step_scale = 1000, step_unit = "m",
+  coord_unit = "km", segment = names(which.max(table(fit3$observations$ID))),
+  step_range = c(1, 96), terms = "cos_angle", colours = state_colours)
+```
+
+![Ecological labels linked to a 48-hour trajectory, observed movements
+and directional persistence in the three-state habitat
+model.](zebra-state-count_files/figure-html/ecological-habitat-overview-1.png)
+
+The map tells us where the inferred states occur. The distributions
+describe their movements. The coefficient intervals show which
+environmental and directional claims the model supports. Reading them
+together makes the state labels useful to an ecologist while keeping
+their limits visible.

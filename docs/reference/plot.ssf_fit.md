@@ -12,7 +12,7 @@ fitted model and stop at segment boundaries.
 plot(
   x,
   ...,
-  type = c("auto", "track", "posterior"),
+  type = c("auto", "track", "posterior", "states"),
   segment = NULL,
   step_range = NULL,
   coords = c("x0", "y0", "x", "y")
@@ -22,7 +22,7 @@ plot(
 plot(
   x,
   ...,
-  type = c("auto", "track", "posterior"),
+  type = c("auto", "track", "posterior", "states"),
   segment = NULL,
   step_range = NULL,
   coords = c("x0", "y0", "x", "y")
@@ -40,13 +40,16 @@ plot(
 
 - ...:
 
-  Reserved for the generic.
+  For `type = "states"`, arguments passed to
+  [`plot_ssf_states()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot_ssf_states.md).
+  Otherwise reserved for the generic.
 
 - type:
 
   Use `"track"` for a map, `"posterior"` for state probabilities, or
   `"auto"` for a map when the chosen coordinate columns are available
-  and a probability plot otherwise.
+  and a probability plot otherwise. `"states"` combines the ecological
+  interpretation, observed movement distributions and estimated effects.
 
 - segment:
 

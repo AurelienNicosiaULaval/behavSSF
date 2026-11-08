@@ -397,3 +397,60 @@ would support an additional positive-difference rule, conditional on this
 fitted model. Deciding to add that rule after seeing these results makes it
 exploratory. It does not provide a significance test corrected for choosing
 the state count, taxonomy or solution.
+
+## Finish with ecological labels
+
+The length labels make the comparison easy to read. We can go further by
+requiring both a movement signature and an environmental association.
+For illustration, we define local movement, grassland movement and
+persistent grassland travel. The two longer states must select grassland
+relative to each of the three other endpoint habitats. Each successive
+state must have a mean step more than twice as long and greater directional
+persistence, supported by a coefficient contrast.
+
+This is an exploratory taxonomy suggested by the fitted pattern. It
+illustrates how to write ecological requirements; it is not an independent
+test of these behaviours. The factor `habitat` refers to the endpoint.
+Grassland is its reference level.
+
+```{r ecological-definition}
+source(system.file("extdata", "zebra-ecological-taxonomy.R",
+  package = "behavSSF", mustWork = TRUE))
+zebra_ecological_taxonomy
+```
+
+```{r ecological-assessment}
+ecology <- assess_taxonomy(fit3, zebra_ecological_taxonomy(), convention = "area")
+ecology$checks
+```
+
+```{r ecological-effects, fig.width=12, fig.height=7.8, fig.alt="State-specific coefficient intervals for directional persistence, direction to a grassland target and three endpoint habitats compared with grassland."}
+state_colours <- c("Local movement" = "#784B8B",
+  "Grassland movement" = "#B6501C", "Persistent grassland travel" = "#166484")
+effect_terms <- c("cos_angle", "cos_diff_theta_to_target",
+  "habitatbushed grassland", "habitatbushland", "habitatwoodland")
+effect_names <- c("Previous heading", "Direction to grassland target",
+  "Bushed grassland vs grassland", "Bushland vs grassland", "Woodland vs grassland")
+plot_ssf_states(fit3, panel = "coefficients", assessment = ecology,
+  terms = effect_terms, term_labels = setNames(effect_names, effect_terms),
+  colours = state_colours)
+```
+
+Negative habitat coefficients support greater selection for grassland
+relative to that endpoint habitat, conditional on the other model terms.
+The two longer states satisfy this requirement. The target-direction
+intervals include zero. We therefore describe grassland selection, rather
+than habitat-directed travelling. Selection of an endpoint habitat and
+orientation towards a target fixed at the start of a step are different
+quantities.
+
+```{r ecological-habitat-overview, fig.width=13, fig.height=11, fig.alt="Ecological labels linked to a 48-hour trajectory, observed movements and directional persistence in the three-state habitat model."}
+plot_ssf_states(fit3, assessment = ecology, step_scale = 1000, step_unit = "m",
+  coord_unit = "km", segment = names(which.max(table(fit3$observations$ID))),
+  step_range = c(1, 96), terms = "cos_angle", colours = state_colours)
+```
+
+The map tells us where the inferred states occur. The distributions describe
+their movements. The coefficient intervals show which environmental and
+directional claims the model supports. Reading them together makes the
+state labels useful to an ecologist while keeping their limits visible.

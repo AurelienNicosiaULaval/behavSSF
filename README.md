@@ -8,10 +8,10 @@ Fit hidden Markov step-selection models and map the inferred behavioural states 
 
 ```r
 install.packages(c("remotes", "ggplot2"))
-remotes::install_github("AurelienNicosiaULaval/behavSSF", ref = "v0.1.0.9010")
+remotes::install_github("AurelienNicosiaULaval/behavSSF", ref = "v0.1.0.9011")
 ```
 
-Installation from source requires an R-compatible C++ toolchain. The [GitHub release](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9010) also provides a source archive with the rendered vignettes.
+Installation from source requires an R-compatible C++ toolchain. The [GitHub release](https://github.com/AurelienNicosiaULaval/behavSSF/releases/tag/v0.1.0.9011) also provides a source archive with the rendered vignettes.
 
 ## Try it on the Hwange zebra
 
