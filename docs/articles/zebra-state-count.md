@@ -531,3 +531,52 @@ describe their movements. The coefficient intervals show which
 environmental and directional claims the model supports. Reading them
 together makes the state labels useful to an ecologist while keeping
 their limits visible.
+
+## Compare any fitted variable between states
+
+The taxonomy is not restricted to length, turns or the habitat variable
+used here.
+[`fit_ssf()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/fit_ssf.md)
+accepts estimable numeric covariates, factors and interactions in its
+formula. Give each used and available endpoint its covariate values
+before fitting. The assessment context then exposes all coefficient rows
+and their joint covariance to your rules.
+
+A context variable that is the same for every alternative in a choice
+set cannot have its own conditional selection effect. It can interact
+with a movement or endpoint term. The [condor
+example](https://aureliennicosiaulaval.github.io/behavSSF/articles/condor-taxonomies.md)
+uses altitude known at the start of a step to modify turning
+persistence.
+
+``` r
+
+ssf_state_contrasts(fit3, terms = "habitatwoodland", assessment = ecology)
+#>              term                        from                          to
+#> 1 habitatwoodland              Local movement Persistent grassland travel
+#> 2 habitatwoodland              Local movement          Grassland movement
+#> 3 habitatwoodland Persistent grassland travel          Grassland movement
+#>    estimate std_error     lower       upper
+#> 1 -3.205221 0.5191172 -4.222672 -2.18776984
+#> 2 -1.065998 0.5610825 -2.165700  0.03370335
+#> 3  2.139223 0.3135488  1.524678  2.75376712
+plot_ssf_states(fit3, panel = "contrasts", assessment = ecology,
+  terms = c("habitatbushed grassland", "habitatbushland", "habitatwoodland"))
+```
+
+![Between-state differences in zebra habitat selection with
+joint-covariance confidence
+intervals.](zebra-state-count_files/figure-html/state-effect-differences-1.png)
+
+The coefficient view reports each state’s effect and interval. The
+contrast view asks whether the effects differ between states, accounting
+for their covariance. An interval crossing zero leaves that difference
+unresolved. These are conditional intervals without adjustment for
+selecting rules or examining many contrasts. They help refine an
+ecological hypothesis; they do not automatically justify a new state
+name or an extra state.
+
+For example, a rule can require
+`ssf_contrast(s, "habitatwoodland", "Grassland movement", "Persistent grassland travel")$upper < 0`.
+The rule compares the two woodland-selection coefficients, rather than
+requiring one coefficient to pass a test and the other to fail one.

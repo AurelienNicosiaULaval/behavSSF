@@ -73,7 +73,7 @@ ssf_state_summary <- function(x, step_scale = 1, step_unit = "input units", asse
 #'
 #' @inheritParams ssf_state_summary
 #' @param panel `"overview"` combines the views. Use `"table"`, `"track"`,
-#'   `"distributions"` or `"coefficients"` to draw them separately.
+#'   `"distributions"`, `"coefficients"` or `"contrasts"` to draw them separately.
 #' @param segment,step_range,coords Passed to [plot.ssf_fit()] for the map only.
 #'   All other panels use the complete fitted observations.
 #' @param terms Optional coefficient names for the coefficient panel. By default
@@ -83,6 +83,8 @@ ssf_state_summary <- function(x, step_scale = 1, step_unit = "input units", asse
 #'   names, indexed by the names in `terms`.
 #' @param angle_bandwidth Circular smoothing bandwidth in radians, shared by
 #'   all states. The default is 0.35 (about 20 degrees).
+#' @param comparisons Optional `from`/`to` state pairs for the contrast panel;
+#'   see [ssf_state_contrasts()].
 #' @param coord_unit Unit label for the original map coordinates. Coordinates
 #'   are not rescaled by `step_scale`.
 #' @param colours Optional colour vector, named by state label or in fitted
@@ -92,17 +94,16 @@ ssf_state_summary <- function(x, step_scale = 1, step_unit = "input units", asse
 #'   ggcircular. Missing observations or covariance
 #'   are identified in the relevant panel.
 #' @export
-plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distributions", "coefficients"),
+plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distributions", "coefficients", "contrasts"),
                             step_scale = 1, step_unit = "input units", segment = NULL,
                             step_range = NULL, coords = c("x0", "y0", "x", "y"), terms = NULL,
                             assessment = NULL, coord_unit = "input units", colours = NULL,
-                            term_labels = NULL, angle_bandwidth = .35) {
+                            term_labels = NULL, angle_bandwidth = .35, comparisons = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) .stop("Install ggplot2 to draw the state summary.")
   panel <- match.arg(panel)
   resolved <- .state_display_fit(x, assessment)
   fit <- resolved$fit
   labels <- resolved$labels
-  table <- ssf_state_summary(x, step_scale, step_unit, assessment)
   palette <- stats::setNames(c("#166484", "#B6501C", "#784B8B", "#21765A", "#9E3D60", "#526372")[seq_along(labels)], labels)
   if (!is.null(colours)) {
     if (!is.character(colours) || anyNA(colours) ||
@@ -117,6 +118,35 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
     .stop("coord_unit must be a nonempty unit label.")
   ink <- "#193541"
   muted <- "#526773"
+  if (panel == "contrasts") {
+    d <- ssf_state_contrasts(x, terms, comparisons, assessment)
+    d$comparison <- paste(d$to, "-", d$from)
+    d$comparison <- factor(d$comparison, levels = rev(unique(d$comparison)))
+    names <- unique(d$term)
+    pretty <- stats::setNames(gsub("_", " ", names, fixed = TRUE), names)
+    pretty[names == "cos_angle"] <- "Previous heading"
+    pretty[names == "cos_diff_theta_to_target"] <- "Direction to target"
+    if (!is.null(term_labels)) {
+      if (!is.character(term_labels) || is.null(base::names(term_labels)) || anyNA(term_labels) ||
+          anyDuplicated(base::names(term_labels)) || !all(base::names(term_labels) %in% names))
+        .stop("term_labels must be named by displayed coefficient terms.")
+      pretty[base::names(term_labels)] <- term_labels
+    }
+    d$term <- factor(d$term, levels = names)
+    return(ggplot2::ggplot(d, ggplot2::aes(x = .data$estimate, y = .data$comparison)) +
+      ggplot2::geom_vline(xintercept = 0, colour = "#AAAAAA", linetype = "dashed", linewidth = .4) +
+      ggplot2::geom_linerange(ggplot2::aes(xmin = .data$lower, xmax = .data$upper),
+        colour = ink, linewidth = .6, na.rm = TRUE) +
+      ggplot2::geom_point(colour = ink, size = 2.5) +
+      ggplot2::facet_wrap(~ term, scales = "free_x", ncol = 2,
+        labeller = ggplot2::labeller(term = pretty)) +
+      ggplot2::scale_y_discrete(labels = function(z)
+        vapply(z, function(s) paste(strwrap(s, 35), collapse = "\n"), "")) +
+      ggplot2::labs(title = "Which effects differ between states?",
+        x = "Coefficient difference and 95% Wald interval", y = NULL,
+        caption = "Differences use the joint covariance. Intervals condition on the fitted model and labels.") + theme_ssf())
+  }
+  table <- ssf_state_summary(x, step_scale, step_unit, assessment)
   number <- function(a) vapply(a, function(v) if (is.finite(v)) format(signif(v, 3), trim = TRUE,
     scientific = FALSE, big.mark = ",") else "Not estimated", "")
   table$.y <- rev(seq_len(nrow(table)))

@@ -1,3 +1,9 @@
+# behavSSF 0.1.0.9012
+
+- Compare any fitted covariate effect between states with `ssf_state_contrasts()` and `plot_ssf_states(..., panel = "contrasts")`, using the joint covariance.
+- Demonstrate origin-altitude effects on condor turning persistence, with state-specific estimates and contrasts, linked movement densities and trajectories.
+- Explain how arbitrary model terms can refine a custom ecological taxonomy.
+
 # behavSSF 0.1.0.9011
 
 - Read a state's decoded share, movement signature and persistence together with `ssf_state_summary()`.

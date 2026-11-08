@@ -174,3 +174,129 @@ ggplot(matches, aes(share, proxy, fill = state)) +
 Choose the candidate labels and contrasts before inspecting the decoded states. The constructor also accepts a ranking function of the unlabelled movement metrics and coefficients. A rule can compare labelled coefficients, standard errors, transition probabilities and occupancy. If an assessment rule is false, the returned history records its name. A custom sequence can include a simpler candidate or the built-in `"Other"` fallback.
 
 For a directional habitat hypothesis, include the compatible target term in the candidate formula and define its bearing at the step origin. The article's four candidates remain available by leaving `taxonomies` at its default. See `?ssf_taxonomy` and `?fit_guided_ssf` for the input contracts.
+
+## Read movement, context and uncertainty together
+
+The same colours now link the named states to the track, the superimposed
+distance densities, the circular turning densities and the coefficient
+intervals. Zero on the circle means continuing straight ahead; 180 degrees
+means a reversal. The densities describe observed steps grouped by their
+decoded state, not independent behavioural measurements.
+
+```{r ecological-overview, fig.width=12, fig.height=10, fig.alt="Condor ecological state overview linking circling-like and directed flight to the trajectory, superimposed length densities, circular turning densities and state coefficient intervals."}
+plot_ssf_states(result, coords = c("x0_m", "y0_m", "x_m", "y_m"),
+  segment = longest, step_scale = 1000, step_unit = "m", coord_unit = "m",
+  colours = palette)
+```
+
+## Let another variable refine the model
+
+An ecologist can add any estimable covariate or interaction. For this bird,
+we have altitude measurements along the observed path, but no altitude for
+hypothetical control endpoints. We therefore use altitude at the start of
+a step, obtained from the preceding recorded endpoint within a segment.
+The first step of each segment is omitted, leaving 1,287 steps. Altitude
+is centred at its median and expressed per 100 metres.
+
+A direct altitude term would be identical for all alternatives at that
+step and cancel from the choice probability. Its interaction with
+`cos_angle` allows turning persistence to depend on the starting altitude
+within each state. This is a context effect on movement. It is not selection
+of high-altitude endpoints, nor a model of vertical flight.
+
+The saved comparison uses 512 controls per step with uniform turns and a
+broad gamma length proposal. Both models receive exactly the same
+observations and controls. The refit code is:
+
+```{r context-refit, eval=FALSE}
+source(system.file("extdata", "condor-context.R", package = "behavSSF"))
+input <- condor_context_data()
+context_modes <- condor_flight_taxonomy(
+  ~ step + log_step + cos_angle + cos_angle:altitude_origin_100m
+)
+context_result <- fit_guided_ssf(input$choices, convention = "area",
+  taxonomies = list(context_modes), persistence_bounds = c(.05, .995),
+  n_starts = 8, short_iter = 100, long_iter = 900, seed = 901207)
+```
+
+The package also includes the completed paired fit and the exact-model
+initialisation used in its preparation script.
+
+```{r context-saved}
+context <- readRDS(system.file("extdata", "condor-context-fit.rds",
+  package = "behavSSF", mustWork = TRUE))
+context$context_assessment$checks
+```
+
+```{r context-coefficients, fig.width=10.5, fig.height=4.2, fig.alt="State-specific turning coefficients and starting-altitude interactions with conditional 95 percent confidence intervals."}
+context_labels <- if (context$context_assessment$accepted)
+  context$context_assessment else NULL
+context_terms <- c("cos_angle", "cos_angle:altitude_origin_100m")
+context_names <- setNames(c("Persistence at reference altitude",
+  "Change in persistence per 100 m"), context_terms)
+plot_ssf_states(context$context, panel = "coefficients", assessment = context_labels,
+  terms = context_terms, term_labels = context_names)
+```
+
+```{r context-contrasts, fig.width=10.5, fig.height=3.6, fig.alt="Between-state contrasts in baseline persistence and its altitude response, with joint-covariance 95 percent confidence intervals."}
+plot_ssf_states(context$context, panel = "contrasts", assessment = context_labels,
+  terms = context_terms, term_labels = context_names)
+```
+
+The altitude coefficient describes how persistence changes with 100 metres
+of starting altitude in that state. The contrast compares those responses
+between states using the full covariance. It gives a more direct assessment
+of a difference than comparing two separate intervals. An interval crossing
+zero does not resolve the sign of that difference.
+
+The original two-state labels are only carried over if the context model
+passes their rules. Otherwise the coefficient panels retain numerical
+state names. Adding a variable may change the fitted states as well as their
+coefficients; it does not guarantee a more detailed ecological label.
+
+These associations concern one bird across seven dates. Altitude can be
+associated with day and flight conditions. The analysis does not isolate a
+causal effect of altitude, thermal strength or wind. Any new taxonomy based
+on this example remains exploratory. Define the desired contrasts in advance
+for a confirmatory application, and seek independent behavioural evidence.
+
+## Keep a finer name only when its rule passes
+
+In the paired fit, adding altitude changes
+`r sum(context$baseline_assessment$labels[context$baseline$state] != context$context_assessment$labels[context$context$state])`
+of 1,287 labels. The interval for the between-state altitude response includes
+zero. We keep the original flight labels; this example does not support a
+more specific altitude-associated directed-flight label.
+
+A taxonomy can make that requirement explicit:
+
+```{r altitude-refinement}
+altitude_modes <- ssf_taxonomy(
+  "altitude_modes",
+  c("Circling-like flight", "Altitude-associated directed flight"),
+  formula = ~ step + log_step + cos_angle + cos_angle:altitude_origin_100m,
+  order_by = "persistence",
+  rules = function(s) {
+    a <- "Circling-like flight"
+    b <- "Altitude-associated directed flight"
+    term <- "cos_angle:altitude_origin_100m"
+    own <- ssf_contrast(s, term, b)
+    difference <- ssf_contrast(s, term, a, b)
+    c(flight_gap = s$metrics[b, "persistence"] - s$metrics[a, "persistence"] > 1,
+      directed_altitude_association = own$lower > 0 || own$upper < 0,
+      different_altitude_response = difference$lower > 0 || difference$upper < 0)
+  }
+)
+refinement <- assess_taxonomy(context$context, altitude_modes, convention = "area",
+  persistence_bounds = c(.05, .995))
+refinement$accepted
+refinement$reasons
+```
+
+The rejected requirements stay visible. To study a different covariate,
+change the model formula, supply its values where the likelihood needs them,
+and name its coefficient in the rule. The same functions then display its
+state effects and between-state contrasts. If it is a factor or interaction,
+use the corresponding fitted coefficient names from `rownames(coef(fit))`.
+This separates adding a variable, finding an association, and assigning a
+more detailed ecological interpretation.

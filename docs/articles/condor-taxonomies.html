@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9011</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9012</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -328,6 +328,132 @@ term in the candidate formula and define its bearing at the step origin.
 The article’s four candidates remain available by leaving
 <code>taxonomies</code> at its default. See <code><a href="../reference/ssf_taxonomy.html">?ssf_taxonomy</a></code>
 and <code><a href="../reference/fit_guided_ssf.html">?fit_guided_ssf</a></code> for the input contracts.</p>
+</div>
+<div class="section level2">
+<h2 id="read-movement-context-and-uncertainty-together">Read movement, context and uncertainty together<a class="anchor" aria-label="anchor" href="#read-movement-context-and-uncertainty-together"></a>
+</h2>
+<p>The same colours now link the named states to the track, the
+superimposed distance densities, the circular turning densities and the
+coefficient intervals. Zero on the circle means continuing straight
+ahead; 180 degrees means a reversal. The densities describe observed
+steps grouped by their decoded state, not independent behavioural
+measurements.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">result</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x0_m"</span>, <span class="st">"y0_m"</span>, <span class="st">"x_m"</span>, <span class="st">"y_m"</span><span class="op">)</span>,</span>
+<span>  segment <span class="op">=</span> <span class="va">longest</span>, step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span>, coord_unit <span class="op">=</span> <span class="st">"m"</span>,</span>
+<span>  colours <span class="op">=</span> <span class="va">palette</span><span class="op">)</span></span></code></pre></div>
+<p><img src="condor-taxonomies_files/figure-html/ecological-overview-1.png" class="r-plt" alt="Condor ecological state overview linking circling-like and directed flight to the trajectory, superimposed length densities, circular turning densities and state coefficient intervals." width="1152" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level2">
+<h2 id="let-another-variable-refine-the-model">Let another variable refine the model<a class="anchor" aria-label="anchor" href="#let-another-variable-refine-the-model"></a>
+</h2>
+<p>An ecologist can add any estimable covariate or interaction. For this
+bird, we have altitude measurements along the observed path, but no
+altitude for hypothetical control endpoints. We therefore use altitude
+at the start of a step, obtained from the preceding recorded endpoint
+within a segment. The first step of each segment is omitted, leaving
+1,287 steps. Altitude is centred at its median and expressed per 100
+metres.</p>
+<p>A direct altitude term would be identical for all alternatives at
+that step and cancel from the choice probability. Its interaction with
+<code>cos_angle</code> allows turning persistence to depend on the
+starting altitude within each state. This is a context effect on
+movement. It is not selection of high-altitude endpoints, nor a model of
+vertical flight.</p>
+<p>The saved comparison uses 512 controls per step with uniform turns
+and a broad gamma length proposal. Both models receive exactly the same
+observations and controls. The refit code is:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"condor-context.R"</span>, package <span class="op">=</span> <span class="st">"behavSSF"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu">condor_context_data</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">context_modes</span> <span class="op">&lt;-</span> <span class="fu">condor_flight_taxonomy</span><span class="op">(</span></span>
+<span>  <span class="op">~</span> <span class="va">step</span> <span class="op">+</span> <span class="va">log_step</span> <span class="op">+</span> <span class="va">cos_angle</span> <span class="op">+</span> <span class="va">cos_angle</span><span class="op">:</span><span class="va">altitude_origin_100m</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">context_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_guided_ssf.html">fit_guided_ssf</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">choices</span>, convention <span class="op">=</span> <span class="st">"area"</span>,</span>
+<span>  taxonomies <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">context_modes</span><span class="op">)</span>, persistence_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.995</span><span class="op">)</span>,</span>
+<span>  n_starts <span class="op">=</span> <span class="fl">8</span>, short_iter <span class="op">=</span> <span class="fl">100</span>, long_iter <span class="op">=</span> <span class="fl">900</span>, seed <span class="op">=</span> <span class="fl">901207</span><span class="op">)</span></span></code></pre></div>
+<p>The package also includes the completed paired fit and the
+exact-model initialisation used in its preparation script.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">context</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"condor-context-fit.rds"</span>,</span>
+<span>  package <span class="op">=</span> <span class="st">"behavSSF"</span>, mustWork <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">context</span><span class="op">$</span><span class="va">context_assessment</span><span class="op">$</span><span class="va">checks</span></span>
+<span><span class="co">#&gt;           converged             hessian               score        valid_kernel </span></span>
+<span><span class="co">#&gt;                TRUE                TRUE                TRUE                TRUE </span></span>
+<span><span class="co">#&gt;          transition           occupancy         state_order     persistence_gap </span></span>
+<span><span class="co">#&gt;                TRUE                TRUE                TRUE                TRUE </span></span>
+<span><span class="co">#&gt; forward_persistence </span></span>
+<span><span class="co">#&gt;                TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">context_labels</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context_assessment</span><span class="op">$</span><span class="va">accepted</span><span class="op">)</span></span>
+<span>  <span class="va">context</span><span class="op">$</span><span class="va">context_assessment</span> <span class="kw">else</span> <span class="cn">NULL</span></span>
+<span><span class="va">context_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cos_angle"</span>, <span class="st">"cos_angle:altitude_origin_100m"</span><span class="op">)</span></span>
+<span><span class="va">context_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Persistence at reference altitude"</span>,</span>
+<span>  <span class="st">"Change in persistence per 100 m"</span><span class="op">)</span>, <span class="va">context_terms</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, panel <span class="op">=</span> <span class="st">"coefficients"</span>, assessment <span class="op">=</span> <span class="va">context_labels</span>,</span>
+<span>  terms <span class="op">=</span> <span class="va">context_terms</span>, term_labels <span class="op">=</span> <span class="va">context_names</span><span class="op">)</span></span></code></pre></div>
+<p><img src="condor-taxonomies_files/figure-html/context-coefficients-1.png" class="r-plt" alt="State-specific turning coefficients and starting-altitude interactions with conditional 95 percent confidence intervals." width="1008" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, panel <span class="op">=</span> <span class="st">"contrasts"</span>, assessment <span class="op">=</span> <span class="va">context_labels</span>,</span>
+<span>  terms <span class="op">=</span> <span class="va">context_terms</span>, term_labels <span class="op">=</span> <span class="va">context_names</span><span class="op">)</span></span></code></pre></div>
+<p><img src="condor-taxonomies_files/figure-html/context-contrasts-1.png" class="r-plt" alt="Between-state contrasts in baseline persistence and its altitude response, with joint-covariance 95 percent confidence intervals." width="1008" style="display: block; margin: auto;"></p>
+<p>The altitude coefficient describes how persistence changes with 100
+metres of starting altitude in that state. The contrast compares those
+responses between states using the full covariance. It gives a more
+direct assessment of a difference than comparing two separate intervals.
+An interval crossing zero does not resolve the sign of that
+difference.</p>
+<p>The original two-state labels are only carried over if the context
+model passes their rules. Otherwise the coefficient panels retain
+numerical state names. Adding a variable may change the fitted states as
+well as their coefficients; it does not guarantee a more detailed
+ecological label.</p>
+<p>These associations concern one bird across seven dates. Altitude can
+be associated with day and flight conditions. The analysis does not
+isolate a causal effect of altitude, thermal strength or wind. Any new
+taxonomy based on this example remains exploratory. Define the desired
+contrasts in advance for a confirmatory application, and seek
+independent behavioural evidence.</p>
+</div>
+<div class="section level2">
+<h2 id="keep-a-finer-name-only-when-its-rule-passes">Keep a finer name only when its rule passes<a class="anchor" aria-label="anchor" href="#keep-a-finer-name-only-when-its-rule-passes"></a>
+</h2>
+<p>In the paired fit, adding altitude changes 4 of 1,287 labels. The
+interval for the between-state altitude response includes zero. We keep
+the original flight labels; this example does not support a more
+specific altitude-associated directed-flight label.</p>
+<p>A taxonomy can make that requirement explicit:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">altitude_modes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ssf_taxonomy.html">ssf_taxonomy</a></span><span class="op">(</span></span>
+<span>  <span class="st">"altitude_modes"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Circling-like flight"</span>, <span class="st">"Altitude-associated directed flight"</span><span class="op">)</span>,</span>
+<span>  formula <span class="op">=</span> <span class="op">~</span> <span class="va">step</span> <span class="op">+</span> <span class="va">log_step</span> <span class="op">+</span> <span class="va">cos_angle</span> <span class="op">+</span> <span class="va">cos_angle</span><span class="op">:</span><span class="va">altitude_origin_100m</span>,</span>
+<span>  order_by <span class="op">=</span> <span class="st">"persistence"</span>,</span>
+<span>  rules <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">a</span> <span class="op">&lt;-</span> <span class="st">"Circling-like flight"</span></span>
+<span>    <span class="va">b</span> <span class="op">&lt;-</span> <span class="st">"Altitude-associated directed flight"</span></span>
+<span>    <span class="va">term</span> <span class="op">&lt;-</span> <span class="st">"cos_angle:altitude_origin_100m"</span></span>
+<span>    <span class="va">own</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ssf_contrast.html">ssf_contrast</a></span><span class="op">(</span><span class="va">s</span>, <span class="va">term</span>, <span class="va">b</span><span class="op">)</span></span>
+<span>    <span class="va">difference</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ssf_contrast.html">ssf_contrast</a></span><span class="op">(</span><span class="va">s</span>, <span class="va">term</span>, <span class="va">a</span>, <span class="va">b</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>flight_gap <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">metrics</span><span class="op">[</span><span class="va">b</span>, <span class="st">"persistence"</span><span class="op">]</span> <span class="op">-</span> <span class="va">s</span><span class="op">$</span><span class="va">metrics</span><span class="op">[</span><span class="va">a</span>, <span class="st">"persistence"</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">1</span>,</span>
+<span>      directed_altitude_association <span class="op">=</span> <span class="va">own</span><span class="op">$</span><span class="va">lower</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">||</span> <span class="va">own</span><span class="op">$</span><span class="va">upper</span> <span class="op">&lt;</span> <span class="fl">0</span>,</span>
+<span>      different_altitude_response <span class="op">=</span> <span class="va">difference</span><span class="op">$</span><span class="va">lower</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">||</span> <span class="va">difference</span><span class="op">$</span><span class="va">upper</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">refinement</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/assess_taxonomy.html">assess_taxonomy</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, <span class="va">altitude_modes</span>, convention <span class="op">=</span> <span class="st">"area"</span>,</span>
+<span>  persistence_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.995</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">refinement</span><span class="op">$</span><span class="va">accepted</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span>
+<span><span class="va">refinement</span><span class="op">$</span><span class="va">reasons</span></span>
+<span><span class="co">#&gt; [1] "directed_altitude_association" "different_altitude_response"</span></span></code></pre></div>
+<p>The rejected requirements stay visible. To study a different
+covariate, change the model formula, supply its values where the
+likelihood needs them, and name its coefficient in the rule. The same
+functions then display its state effects and between-state contrasts. If
+it is a factor or interaction, use the corresponding fitted coefficient
+names from <code>rownames(coef(fit))</code>. This separates adding a
+variable, finding an association, and assigning a more detailed
+ecological interpretation.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

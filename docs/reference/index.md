@@ -39,6 +39,8 @@
   : A common white theme for movement plots
 - [`ssf_state_summary()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_state_summary.md)
   : Read the movement signature of each inferred state
+- [`ssf_state_contrasts()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_state_contrasts.md)
+  : Compare model effects between inferred states
 - [`plot_ssf_states()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/plot_ssf_states.md)
   : Show how inferred states acquire an ecological interpretation
 

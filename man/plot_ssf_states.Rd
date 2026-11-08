@@ -6,7 +6,7 @@
 \usage{
 plot_ssf_states(
   x,
-  panel = c("overview", "table", "track", "distributions", "coefficients"),
+  panel = c("overview", "table", "track", "distributions", "coefficients", "contrasts"),
   step_scale = 1,
   step_unit = "input units",
   segment = NULL,
@@ -17,14 +17,15 @@ plot_ssf_states(
   coord_unit = "input units",
   colours = NULL,
   term_labels = NULL,
-  angle_bandwidth = 0.35
+  angle_bandwidth = 0.35,
+  comparisons = NULL
 )
 }
 \arguments{
 \item{x}{A fitted \code{ssf_fit} or selected \code{guided_ssf} object.}
 
 \item{panel}{\code{"overview"} combines the views. Use \code{"table"}, \code{"track"},
-\code{"distributions"} or \code{"coefficients"} to draw them separately.}
+\code{"distributions"}, \code{"coefficients"} or \code{"contrasts"} to draw them separately.}
 
 \item{step_scale}{Positive multiplier applied to step lengths and their SDs.
 For input in kilometres, use 1000 to display metres.}
@@ -53,6 +54,9 @@ names, indexed by the names in \code{terms}.}
 
 \item{angle_bandwidth}{Circular smoothing bandwidth in radians, shared by
 all states. The default is 0.35 (about 20 degrees).}
+
+\item{comparisons}{Optional \code{from}/\code{to} state pairs for the contrast panel;
+see \code{\link[=ssf_state_contrasts]{ssf_state_contrasts()}}.}
 }
 \value{
 A ggplot object, or a patchwork for combined views. ggplot2 is required;

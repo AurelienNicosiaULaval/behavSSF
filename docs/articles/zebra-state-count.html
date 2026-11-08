@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9011</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9012</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -688,6 +688,44 @@ describe their movements. The coefficient intervals show which
 environmental and directional claims the model supports. Reading them
 together makes the state labels useful to an ecologist while keeping
 their limits visible.</p>
+</div>
+<div class="section level2">
+<h2 id="compare-any-fitted-variable-between-states">Compare any fitted variable between states<a class="anchor" aria-label="anchor" href="#compare-any-fitted-variable-between-states"></a>
+</h2>
+<p>The taxonomy is not restricted to length, turns or the habitat
+variable used here. <code><a href="../reference/fit_ssf.html">fit_ssf()</a></code> accepts estimable numeric
+covariates, factors and interactions in its formula. Give each used and
+available endpoint its covariate values before fitting. The assessment
+context then exposes all coefficient rows and their joint covariance to
+your rules.</p>
+<p>A context variable that is the same for every alternative in a choice
+set cannot have its own conditional selection effect. It can interact
+with a movement or endpoint term. The <a href="condor-taxonomies.html">condor example</a> uses altitude known at
+the start of a step to modify turning persistence.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/ssf_state_contrasts.html">ssf_state_contrasts</a></span><span class="op">(</span><span class="va">fit3</span>, terms <span class="op">=</span> <span class="st">"habitatwoodland"</span>, assessment <span class="op">=</span> <span class="va">ecology</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              term                        from                          to</span></span>
+<span><span class="co">#&gt; 1 habitatwoodland              Local movement Persistent grassland travel</span></span>
+<span><span class="co">#&gt; 2 habitatwoodland              Local movement          Grassland movement</span></span>
+<span><span class="co">#&gt; 3 habitatwoodland Persistent grassland travel          Grassland movement</span></span>
+<span><span class="co">#&gt;    estimate std_error     lower       upper</span></span>
+<span><span class="co">#&gt; 1 -3.205221 0.5191172 -4.222672 -2.18776984</span></span>
+<span><span class="co">#&gt; 2 -1.065998 0.5610825 -2.165700  0.03370335</span></span>
+<span><span class="co">#&gt; 3  2.139223 0.3135488  1.524678  2.75376712</span></span>
+<span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">fit3</span>, panel <span class="op">=</span> <span class="st">"contrasts"</span>, assessment <span class="op">=</span> <span class="va">ecology</span>,</span>
+<span>  terms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"habitatbushed grassland"</span>, <span class="st">"habitatbushland"</span>, <span class="st">"habitatwoodland"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zebra-state-count_files/figure-html/state-effect-differences-1.png" class="r-plt" alt="Between-state differences in zebra habitat selection with joint-covariance confidence intervals." width="100%" style="display: block; margin: auto;"></p>
+<p>The coefficient view reports each state’s effect and interval. The
+contrast view asks whether the effects differ between states, accounting
+for their covariance. An interval crossing zero leaves that difference
+unresolved. These are conditional intervals without adjustment for
+selecting rules or examining many contrasts. They help refine an
+ecological hypothesis; they do not automatically justify a new state
+name or an extra state.</p>
+<p>For example, a rule can require
+<code>ssf_contrast(s, "habitatwoodland", "Grassland movement", "Persistent grassland travel")$upper &lt; 0</code>.
+The rule compares the two woodland-selection coefficients, rather than
+requiring one coefficient to pass a test and the other to fail one.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

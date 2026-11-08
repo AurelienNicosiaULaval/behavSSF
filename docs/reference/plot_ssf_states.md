@@ -12,7 +12,7 @@ not adjust for model or taxonomy selection.
 ``` r
 plot_ssf_states(
   x,
-  panel = c("overview", "table", "track", "distributions", "coefficients"),
+  panel = c("overview", "table", "track", "distributions", "coefficients", "contrasts"),
   step_scale = 1,
   step_unit = "input units",
   segment = NULL,
@@ -23,7 +23,8 @@ plot_ssf_states(
   coord_unit = "input units",
   colours = NULL,
   term_labels = NULL,
-  angle_bandwidth = 0.35
+  angle_bandwidth = 0.35,
+  comparisons = NULL
 )
 ```
 
@@ -36,7 +37,8 @@ plot_ssf_states(
 - panel:
 
   `"overview"` combines the views. Use `"table"`, `"track"`,
-  `"distributions"` or `"coefficients"` to draw them separately.
+  `"distributions"`, `"coefficients"` or `"contrasts"` to draw them
+  separately.
 
 - step_scale:
 
@@ -86,6 +88,11 @@ plot_ssf_states(
 
   Circular smoothing bandwidth in radians, shared by all states. The
   default is 0.35 (about 20 degrees).
+
+- comparisons:
+
+  Optional `from`/`to` state pairs for the contrast panel; see
+  [`ssf_state_contrasts()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/ssf_state_contrasts.md).
 
 ## Value
 

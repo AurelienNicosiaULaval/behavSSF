@@ -15,7 +15,7 @@ on the fitted model and labels and do not adjust for model or taxonomy selection
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9011</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9012</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@ on the fitted model and labels and do not adjust for model or taxonomy selection
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_ssf_states</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  panel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overview"</span>, <span class="st">"table"</span>, <span class="st">"track"</span>, <span class="st">"distributions"</span>, <span class="st">"coefficients"</span><span class="op">)</span>,</span>
+<span>  panel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"overview"</span>, <span class="st">"table"</span>, <span class="st">"track"</span>, <span class="st">"distributions"</span>, <span class="st">"coefficients"</span>, <span class="st">"contrasts"</span><span class="op">)</span>,</span>
 <span>  step_scale <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  step_unit <span class="op">=</span> <span class="st">"input units"</span>,</span>
 <span>  segment <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -70,7 +70,8 @@ on the fitted model and labels and do not adjust for model or taxonomy selection
 <span>  coord_unit <span class="op">=</span> <span class="st">"input units"</span>,</span>
 <span>  colours <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  angle_bandwidth <span class="op">=</span> <span class="fl">0.35</span></span>
+<span>  angle_bandwidth <span class="op">=</span> <span class="fl">0.35</span>,</span>
+<span>  comparisons <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -84,7 +85,7 @@ on the fitted model and labels and do not adjust for model or taxonomy selection
 
 <dt id="arg-panel">panel<a class="anchor" aria-label="anchor" href="#arg-panel"></a></dt>
 <dd><p><code>"overview"</code> combines the views. Use <code>"table"</code>, <code>"track"</code>,
-<code>"distributions"</code> or <code>"coefficients"</code> to draw them separately.</p></dd>
+<code>"distributions"</code>, <code>"coefficients"</code> or <code>"contrasts"</code> to draw them separately.</p></dd>
 
 
 <dt id="arg-step-scale">step_scale<a class="anchor" aria-label="anchor" href="#arg-step-scale"></a></dt>
@@ -131,6 +132,11 @@ names, indexed by the names in <code>terms</code>.</p></dd>
 <dt id="arg-angle-bandwidth">angle_bandwidth<a class="anchor" aria-label="anchor" href="#arg-angle-bandwidth"></a></dt>
 <dd><p>Circular smoothing bandwidth in radians, shared by
 all states. The default is 0.35 (about 20 degrees).</p></dd>
+
+
+<dt id="arg-comparisons">comparisons<a class="anchor" aria-label="anchor" href="#arg-comparisons"></a></dt>
+<dd><p>Optional <code>from</code>/<code>to</code> state pairs for the contrast panel;
+see <code><a href="ssf_state_contrasts.html">ssf_state_contrasts()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

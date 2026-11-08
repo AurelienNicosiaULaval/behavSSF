@@ -42,6 +42,7 @@ reference:
   - plot.ssf_fit
   - theme_ssf
   - ssf_state_summary
+  - ssf_state_contrasts
   - plot_ssf_states
 - title: Prepare steps and evaluate kernels
   contents:

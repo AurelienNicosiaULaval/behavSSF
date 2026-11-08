@@ -454,3 +454,34 @@ The map tells us where the inferred states occur. The distributions describe
 their movements. The coefficient intervals show which environmental and
 directional claims the model supports. Reading them together makes the
 state labels useful to an ecologist while keeping their limits visible.
+
+## Compare any fitted variable between states
+
+The taxonomy is not restricted to length, turns or the habitat variable
+used here. `fit_ssf()` accepts estimable numeric covariates, factors and
+interactions in its formula. Give each used and available endpoint its
+covariate values before fitting. The assessment context then exposes all
+coefficient rows and their joint covariance to your rules.
+
+A context variable that is the same for every alternative in a choice set
+cannot have its own conditional selection effect. It can interact with a
+movement or endpoint term. The [condor example](condor-taxonomies.html) uses
+altitude known at the start of a step to modify turning persistence.
+
+```{r state-effect-differences, fig.width=10, fig.height=6.5, fig.alt="Between-state differences in zebra habitat selection with joint-covariance confidence intervals."}
+ssf_state_contrasts(fit3, terms = "habitatwoodland", assessment = ecology)
+plot_ssf_states(fit3, panel = "contrasts", assessment = ecology,
+  terms = c("habitatbushed grassland", "habitatbushland", "habitatwoodland"))
+```
+
+The coefficient view reports each state's effect and interval. The contrast
+view asks whether the effects differ between states, accounting for their
+covariance. An interval crossing zero leaves that difference unresolved.
+These are conditional intervals without adjustment for selecting rules or
+examining many contrasts. They help refine an ecological hypothesis; they
+do not automatically justify a new state name or an extra state.
+
+For example, a rule can require `ssf_contrast(s, "habitatwoodland",
+"Grassland movement", "Persistent grassland travel")$upper < 0`.
+The rule compares the two woodland-selection coefficients, rather than
+requiring one coefficient to pass a test and the other to fail one.
