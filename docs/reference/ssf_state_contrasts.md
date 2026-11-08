@@ -26,7 +26,10 @@ ssf_state_contrasts(
 
 - terms:
 
-  Coefficient names. The default includes all non-radial terms.
+  Coefficient names. The default shows additional covariate effects,
+  excluding baseline distance terms and `cos_angle`. Explicit names can
+  include those terms. No additional effects gives a zero-row data
+  frame.
 
 - comparisons:
 

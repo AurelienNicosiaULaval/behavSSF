@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9012</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -191,13 +191,15 @@ to the two labels at that step.</p>
 </h2>
 <p>The useful result is a set of states that we can interpret, with the
 measurements that support those names. This view brings them together.
-Colours follow the labels in every panel. The map uses the same 48-hour
-excerpt; the table and distributions use all 6,377 observed steps.</p>
+Colours follow the labels in every panel. This movement-only fit has no
+additional covariates, so the overview omits a coefficient panel. The
+map uses the same 48-hour excerpt; the table and distributions use all
+6,377 observed steps.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">result</span>, type <span class="op">=</span> <span class="st">"states"</span>, step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span>,</span>
 <span>     coord_unit <span class="op">=</span> <span class="st">"km"</span>, segment <span class="op">=</span> <span class="va">longest</span>, step_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">96</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="zebra-hwange_files/figure-html/ecological-overview-1.png" class="r-plt" alt="Ecological overview combining state counts, the zebra trajectory, step-length and turning distributions, and coefficient intervals with consistent state colours." width="100%" style="display: block; margin: auto;"></p>
+<p><img src="zebra-hwange_files/figure-html/ecological-overview-1.png" class="r-plt" alt="Ecological overview combining state counts, the zebra trajectory, step-length and turning distributions with consistent state colours." width="100%" style="display: block; margin: auto;"></p>
 <p>Travelling combines long steps with strong persistence in the
 previous heading. Foraging has intermediate lengths and weaker
 persistence. Resting has short steps and little directional persistence.

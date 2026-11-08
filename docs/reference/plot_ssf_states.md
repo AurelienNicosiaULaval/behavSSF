@@ -58,9 +58,12 @@ plot_ssf_states(
 
 - terms:
 
-  Optional coefficient names for the coefficient panel. By default it
-  shows angular, target, environmental and lag terms, excluding the
-  distance-distribution parameters.
+  Optional coefficient names for the coefficient or contrast panel. The
+  default shows target, environmental and context effects, including
+  interactions, but excludes baseline distance parameters and
+  `cos_angle`. Movement distributions already describe those baseline
+  terms. Supply explicit names to inspect them. An overview omits its
+  coefficient panel when there are no additional covariate effects.
 
 - assessment:
 

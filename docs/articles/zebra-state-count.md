@@ -493,9 +493,9 @@ ecology$checks
 
 state_colours <- c("Local movement" = "#784B8B",
   "Grassland movement" = "#B6501C", "Persistent grassland travel" = "#166484")
-effect_terms <- c("cos_angle", "cos_diff_theta_to_target",
+effect_terms <- c("cos_diff_theta_to_target",
   "habitatbushed grassland", "habitatbushland", "habitatwoodland")
-effect_names <- c("Previous heading", "Direction to grassland target",
+effect_names <- c("Direction to grassland target",
   "Bushed grassland vs grassland", "Bushland vs grassland", "Woodland vs grassland")
 plot_ssf_states(fit3, panel = "coefficients", assessment = ecology,
   terms = effect_terms, term_labels = setNames(effect_names, effect_terms),
@@ -519,7 +519,8 @@ are different quantities.
 
 plot_ssf_states(fit3, assessment = ecology, step_scale = 1000, step_unit = "m",
   coord_unit = "km", segment = names(which.max(table(fit3$observations$ID))),
-  step_range = c(1, 96), terms = "cos_angle", colours = state_colours)
+  step_range = c(1, 96), terms = effect_terms, term_labels = setNames(effect_names, effect_terms),
+  colours = state_colours)
 ```
 
 ![Ecological labels linked to a 48-hour trajectory, observed movements

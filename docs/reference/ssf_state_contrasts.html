@@ -13,7 +13,7 @@ assigned labels; they do not adjust for choosing states, rules or contrasts."><m
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9012</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,9 @@ assigned labels; they do not adjust for choosing states, rules or contrasts.</p>
 
 
 <dt id="arg-terms">terms<a class="anchor" aria-label="anchor" href="#arg-terms"></a></dt>
-<dd><p>Coefficient names. The default includes all non-radial terms.</p></dd>
+<dd><p>Coefficient names. The default shows additional covariate effects,
+excluding baseline distance terms and <code>cos_angle</code>. Explicit names can
+include those terms. No additional effects gives a zero-row data frame.</p></dd>
 
 
 <dt id="arg-comparisons">comparisons<a class="anchor" aria-label="anchor" href="#arg-comparisons"></a></dt>

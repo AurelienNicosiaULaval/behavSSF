@@ -258,11 +258,12 @@ for the input contracts.
 ## Read movement, context and uncertainty together
 
 The same colours now link the named states to the track, the
-superimposed distance densities, the circular turning densities and the
-coefficient intervals. Zero on the circle means continuing straight
-ahead; 180 degrees means a reversal. The densities describe observed
-steps grouped by their decoded state, not independent behavioural
-measurements.
+superimposed distance densities and the circular turning densities. This
+movement-only model has no additional covariate coefficients, so its
+overview has no coefficient panel. Zero on the circle means continuing
+straight ahead; 180 degrees means a reversal. The densities describe
+observed steps grouped by their decoded state, not independent
+behavioural measurements.
 
 ``` r
 
@@ -273,8 +274,8 @@ plot_ssf_states(result, coords = c("x0_m", "y0_m", "x_m", "y_m"),
 
 ![Condor ecological state overview linking circling-like and directed
 flight to the trajectory, superimposed length densities, circular
-turning densities and state coefficient
-intervals.](condor-taxonomies_files/figure-html/ecological-overview-1.png)
+turning densities without repeating a baseline turning
+coefficient.](condor-taxonomies_files/figure-html/ecological-overview-1.png)
 
 ## Let another variable refine the model
 
@@ -329,15 +330,14 @@ context$context_assessment$checks
 
 context_labels <- if (context$context_assessment$accepted)
   context$context_assessment else NULL
-context_terms <- c("cos_angle", "cos_angle:altitude_origin_100m")
-context_names <- setNames(c("Persistence at reference altitude",
-  "Change in persistence per 100 m"), context_terms)
+context_terms <- "cos_angle:altitude_origin_100m"
+context_names <- setNames("Change in persistence per 100 m", context_terms)
 plot_ssf_states(context$context, panel = "coefficients", assessment = context_labels,
   terms = context_terms, term_labels = context_names)
 ```
 
-![State-specific turning coefficients and starting-altitude interactions
-with conditional 95 percent confidence
+![Starting-altitude effects on turning persistence in each state with
+conditional 95 percent confidence
 intervals.](condor-taxonomies_files/figure-html/context-coefficients-1.png)
 
 ``` r
@@ -346,9 +346,12 @@ plot_ssf_states(context$context, panel = "contrasts", assessment = context_label
   terms = context_terms, term_labels = context_names)
 ```
 
-![Between-state contrasts in baseline persistence and its altitude
-response, with joint-covariance 95 percent confidence
-intervals.](condor-taxonomies_files/figure-html/context-contrasts-1.png)
+![Difference between states in the altitude response with its
+joint-covariance 95 percent confidence
+interval.](condor-taxonomies_files/figure-html/context-contrasts-1.png)
+
+The coefficient panels focus on the additional altitude effect. The
+baseline turning coefficient is already described by the movement views.
 
 The altitude coefficient describes how persistence changes with 100
 metres of starting altitude in that state. The contrast compares those

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9012</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -333,16 +333,17 @@ and <code><a href="../reference/fit_guided_ssf.html">?fit_guided_ssf</a></code> 
 <h2 id="read-movement-context-and-uncertainty-together">Read movement, context and uncertainty together<a class="anchor" aria-label="anchor" href="#read-movement-context-and-uncertainty-together"></a>
 </h2>
 <p>The same colours now link the named states to the track, the
-superimposed distance densities, the circular turning densities and the
-coefficient intervals. Zero on the circle means continuing straight
-ahead; 180 degrees means a reversal. The densities describe observed
-steps grouped by their decoded state, not independent behavioural
-measurements.</p>
+superimposed distance densities and the circular turning densities. This
+movement-only model has no additional covariate coefficients, so its
+overview has no coefficient panel. Zero on the circle means continuing
+straight ahead; 180 degrees means a reversal. The densities describe
+observed steps grouped by their decoded state, not independent
+behavioural measurements.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">result</span>, coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x0_m"</span>, <span class="st">"y0_m"</span>, <span class="st">"x_m"</span>, <span class="st">"y_m"</span><span class="op">)</span>,</span>
 <span>  segment <span class="op">=</span> <span class="va">longest</span>, step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span>, coord_unit <span class="op">=</span> <span class="st">"m"</span>,</span>
 <span>  colours <span class="op">=</span> <span class="va">palette</span><span class="op">)</span></span></code></pre></div>
-<p><img src="condor-taxonomies_files/figure-html/ecological-overview-1.png" class="r-plt" alt="Condor ecological state overview linking circling-like and directed flight to the trajectory, superimposed length densities, circular turning densities and state coefficient intervals." width="1152" style="display: block; margin: auto;"></p>
+<p><img src="condor-taxonomies_files/figure-html/ecological-overview-1.png" class="r-plt" alt="Condor ecological state overview linking circling-like and directed flight to the trajectory, superimposed length densities, circular turning densities without repeating a baseline turning coefficient." width="1152" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="let-another-variable-refine-the-model">Let another variable refine the model<a class="anchor" aria-label="anchor" href="#let-another-variable-refine-the-model"></a>
@@ -387,16 +388,18 @@ exact-model initialisation used in its preparation script.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">context_labels</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context_assessment</span><span class="op">$</span><span class="va">accepted</span><span class="op">)</span></span>
 <span>  <span class="va">context</span><span class="op">$</span><span class="va">context_assessment</span> <span class="kw">else</span> <span class="cn">NULL</span></span>
-<span><span class="va">context_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cos_angle"</span>, <span class="st">"cos_angle:altitude_origin_100m"</span><span class="op">)</span></span>
-<span><span class="va">context_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Persistence at reference altitude"</span>,</span>
-<span>  <span class="st">"Change in persistence per 100 m"</span><span class="op">)</span>, <span class="va">context_terms</span><span class="op">)</span></span>
+<span><span class="va">context_terms</span> <span class="op">&lt;-</span> <span class="st">"cos_angle:altitude_origin_100m"</span></span>
+<span><span class="va">context_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="st">"Change in persistence per 100 m"</span>, <span class="va">context_terms</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, panel <span class="op">=</span> <span class="st">"coefficients"</span>, assessment <span class="op">=</span> <span class="va">context_labels</span>,</span>
 <span>  terms <span class="op">=</span> <span class="va">context_terms</span>, term_labels <span class="op">=</span> <span class="va">context_names</span><span class="op">)</span></span></code></pre></div>
-<p><img src="condor-taxonomies_files/figure-html/context-coefficients-1.png" class="r-plt" alt="State-specific turning coefficients and starting-altitude interactions with conditional 95 percent confidence intervals." width="1008" style="display: block; margin: auto;"></p>
+<p><img src="condor-taxonomies_files/figure-html/context-coefficients-1.png" class="r-plt" alt="Starting-altitude effects on turning persistence in each state with conditional 95 percent confidence intervals." width="720" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, panel <span class="op">=</span> <span class="st">"contrasts"</span>, assessment <span class="op">=</span> <span class="va">context_labels</span>,</span>
 <span>  terms <span class="op">=</span> <span class="va">context_terms</span>, term_labels <span class="op">=</span> <span class="va">context_names</span><span class="op">)</span></span></code></pre></div>
-<p><img src="condor-taxonomies_files/figure-html/context-contrasts-1.png" class="r-plt" alt="Between-state contrasts in baseline persistence and its altitude response, with joint-covariance 95 percent confidence intervals." width="1008" style="display: block; margin: auto;"></p>
+<p><img src="condor-taxonomies_files/figure-html/context-contrasts-1.png" class="r-plt" alt="Difference between states in the altitude response with its joint-covariance 95 percent confidence interval." width="720" style="display: block; margin: auto;"></p>
+<p>The coefficient panels focus on the additional altitude effect. The
+baseline turning coefficient is already described by the movement
+views.</p>
 <p>The altitude coefficient describes how persistence changes with 100
 metres of starting altitude in that state. The contrast compares those
 responses between states using the full covariance. It gives a more

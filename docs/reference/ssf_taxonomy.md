@@ -81,7 +81,7 @@ ssf_taxonomy("step_regimes", c("Short steps", "Long steps"),
 #>
 #> $formula
 #> ~step + log_step + cos_angle
-#> <environment: 0x10601e390>
+#> <environment: 0x11206af48>
 #>
 #> $default_formula
 #> [1] TRUE
@@ -95,7 +95,7 @@ ssf_taxonomy("step_regimes", c("Short steps", "Long steps"),
 #>     c(length_ratio = s$metrics["Long steps", "mean_step"] > 2 *
 #>         s$metrics["Short steps", "mean_step"])
 #> }
-#> <environment: 0x1060177e8>
+#> <environment: 0x111b04ca8>
 #>
 #> attr(,"class")
 #> [1] "ssf_taxonomy"

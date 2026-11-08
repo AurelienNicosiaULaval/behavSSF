@@ -16,7 +16,7 @@ test_that("state contrasts use covariance between arbitrary state effects", {
     comparisons = data.frame(from = "Directed", to = "Local"))
   expect_equal(reverse$estimate, -x$estimate)
   expect_equal(reverse$lower, -x$upper)
-  expect_identical(ssf_state_contrasts(fit)$term, c("cos_angle", "other_variable"))
+  expect_identical(ssf_state_contrasts(fit)$term, "other_variable")
   expect_error(ssf_state_contrasts(fit, "unknown"), "coefficient names")
   expect_error(ssf_state_contrasts(fit, comparisons = data.frame(from = "Local", to = "Local")), "from/to")
   expect_error(ssf_state_contrasts(fit, level = 1), "level")

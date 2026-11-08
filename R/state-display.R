@@ -76,9 +76,12 @@ ssf_state_summary <- function(x, step_scale = 1, step_unit = "input units", asse
 #'   `"distributions"`, `"coefficients"` or `"contrasts"` to draw them separately.
 #' @param segment,step_range,coords Passed to [plot.ssf_fit()] for the map only.
 #'   All other panels use the complete fitted observations.
-#' @param terms Optional coefficient names for the coefficient panel. By default
-#'   it shows angular, target, environmental and lag terms, excluding the
-#'   distance-distribution parameters.
+#' @param terms Optional coefficient names for the coefficient or contrast panel.
+#'   The default shows target, environmental and context effects, including
+#'   interactions, but excludes baseline distance parameters and `cos_angle`.
+#'   Movement distributions already describe those baseline terms. Supply
+#'   explicit names to inspect them. An overview omits its coefficient panel
+#'   when there are no additional covariate effects.
 #' @param term_labels Optional named character vector of readable coefficient
 #'   names, indexed by the names in `terms`.
 #' @param angle_bandwidth Circular smoothing bandwidth in radians, shared by
@@ -118,8 +121,14 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
     .stop("coord_unit must be a nonempty unit label.")
   ink <- "#193541"
   muted <- "#526773"
+  empty <- function(title, text) ggplot2::ggplot() +
+    ggplot2::annotate("text", x = 0, y = 0, label = text, colour = muted, size = 4) +
+    ggplot2::labs(title = title) + theme_ssf() +
+    ggplot2::theme(axis.text = ggplot2::element_blank(), axis.title = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank())
   if (panel == "contrasts") {
     d <- ssf_state_contrasts(x, terms, comparisons, assessment)
+    if (!nrow(d)) return(empty("Other covariate contrasts", "No additional covariate coefficients in this model"))
     d$comparison <- paste(d$to, "-", d$from)
     d$comparison <- factor(d$comparison, levels = rev(unique(d$comparison)))
     names <- unique(d$term)
@@ -142,7 +151,7 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
         labeller = ggplot2::labeller(term = pretty)) +
       ggplot2::scale_y_discrete(labels = function(z)
         vapply(z, function(s) paste(strwrap(s, 35), collapse = "\n"), "")) +
-      ggplot2::labs(title = "Which effects differ between states?",
+      ggplot2::labs(title = "Differences between states",
         x = "Coefficient difference and 95% Wald interval", y = NULL,
         caption = "Differences use the joint covariance. Intervals condition on the fitted model and labels.") + theme_ssf())
   }
@@ -158,24 +167,23 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
     sprintf("%.0f%%-%.0f%%", 100 * table$stay_min, 100 * table$stay_max)
   table$.run <- if (length(dim(fit$transition)) > 2L) "Range across hours" else if (fit$n_states == 1L)
     "One-state model" else paste(number(table$mean_run_steps), "steps per run")
-  headings <- data.frame(x = c(.2, 2.8, 5.5, 7.8, 10.3),
+  headings <- data.frame(x = c(.2, 3.3, 6.4, 9.5),
     label = c("State", "Observed steps", paste0("Mean step (", step_unit, ")"),
-      "Turn coefficient", "Stay in state"))
+      "Stay in state"))
   tab <- ggplot2::ggplot(table) +
     ggplot2::geom_hline(ggplot2::aes(yintercept = .data$.y - .47), colour = "#E5E5E5", linewidth = .35) +
     ggplot2::geom_text(data = headings, ggplot2::aes(x = .data$x, label = .data$label),
       y = nrow(table) + .7, inherit.aes = FALSE, hjust = 0, size = 3.6, fontface = "bold", colour = ink) +
     ggplot2::geom_text(ggplot2::aes(x = .2, y = .data$.y, label = .data$.label, colour = .data$state),
       hjust = 0, size = 4, fontface = "bold", lineheight = .95) +
-    ggplot2::geom_text(ggplot2::aes(x = 2.8, y = .data$.y + .12, label = .data$.count), hjust = 0, size = 3.7, colour = ink) +
-    ggplot2::geom_segment(ggplot2::aes(x = 2.8, xend = 4.7, y = .data$.y - .17, yend = .data$.y - .17), colour = "#EEEEEE", linewidth = 3) +
-    ggplot2::geom_segment(ggplot2::aes(x = 2.8, xend = 2.8 + 1.9 * .data$fraction,
-      y = .data$.y - .17, yend = .data$.y - .17, colour = .data$state), linewidth = 3) +
-    ggplot2::geom_text(ggplot2::aes(x = 5.5, y = .data$.y + .18, label = .data$.length), hjust = 0, size = 4, colour = ink) +
-    ggplot2::geom_text(ggplot2::aes(x = 5.5, y = .data$.y - .2, label = .data$.sd), hjust = 0, size = 3.2, colour = muted) +
-    ggplot2::geom_text(ggplot2::aes(x = 7.8, y = .data$.y, label = number(.data$persistence)), hjust = 0, size = 4, colour = ink) +
-    ggplot2::geom_text(ggplot2::aes(x = 10.3, y = .data$.y + .18, label = .data$.stay), hjust = 0, size = 4, colour = ink) +
-    ggplot2::geom_text(ggplot2::aes(x = 10.3, y = .data$.y - .2, label = .data$.run), hjust = 0, size = 3.1, colour = muted) +
+    ggplot2::geom_text(ggplot2::aes(x = 3.3, y = .data$.y + .23, label = .data$.count), hjust = 0, size = 3.7, colour = ink) +
+    ggplot2::geom_segment(ggplot2::aes(x = 3.3, xend = 5.4, y = .data$.y - .25, yend = .data$.y - .25), colour = "#EEEEEE", linewidth = 3) +
+    ggplot2::geom_segment(ggplot2::aes(x = 3.3, xend = 3.3 + 2.1 * .data$fraction,
+      y = .data$.y - .25, yend = .data$.y - .25, colour = .data$state), linewidth = 3) +
+    ggplot2::geom_text(ggplot2::aes(x = 6.4, y = .data$.y + .24, label = .data$.length), hjust = 0, size = 4, colour = ink) +
+    ggplot2::geom_text(ggplot2::aes(x = 6.4, y = .data$.y - .24, label = .data$.sd), hjust = 0, size = 3.2, colour = muted) +
+    ggplot2::geom_text(ggplot2::aes(x = 9.5, y = .data$.y + .24, label = .data$.stay), hjust = 0, size = 4, colour = ink) +
+    ggplot2::geom_text(ggplot2::aes(x = 9.5, y = .data$.y - .24, label = .data$.run), hjust = 0, size = 3.1, colour = muted) +
     ggplot2::scale_colour_manual(values = palette) +
     ggplot2::coord_cartesian(xlim = c(0, 12.2), ylim = c(.35, nrow(table) + 1), clip = "off") +
     theme_ssf() + ggplot2::theme(axis.text = ggplot2::element_blank(), axis.title = ggplot2::element_blank(),
@@ -183,10 +191,6 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
   if (panel == "table") return(tab)
   observations <- fit$observations
   observations$.state <- factor(labels[fit$state], levels = labels)
-  empty <- function(title, text) ggplot2::ggplot() +
-    ggplot2::annotate("text", x = 0, y = 0, label = text, colour = muted, size = 4) +
-    ggplot2::labs(title = title) + theme_ssf() +
-    ggplot2::theme(axis.text = ggplot2::element_blank(), axis.title = ggplot2::element_blank(), panel.grid = ggplot2::element_blank())
   step_plot <- empty("Observed step-length densities", "Positive step lengths are not recorded")
   if ("step" %in% names(observations) && all(is.finite(observations$step) & observations$step > 0)) {
     d <- data.frame(log_distance = log10(observations$step * step_scale), state = observations$.state)
@@ -235,10 +239,7 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
     return(patchwork::wrap_plots(step_plot, turns))
   }
   coefficients <- .summarise_ssf(fit, labels)$coefficients
-  radial <- c("step", "log_step", unique(unlist(lapply(.step_families, names))))
-  if (is.null(terms)) terms <- setdiff(rownames(stats::coef(fit)), radial)
-  if (!is.character(terms) || anyNA(terms) || anyDuplicated(terms) || !all(terms %in% rownames(stats::coef(fit))))
-    .stop("terms must contain distinct fitted coefficient names.")
+  terms <- .state_effect_terms(fit, terms)
   effects <- coefficients[coefficients$term %in% terms, ]
   if (nrow(effects)) {
     effects$state <- factor(effects$state, levels = rev(labels))
@@ -263,10 +264,10 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
       ggplot2::scale_colour_manual(values = palette) +
       ggplot2::scale_y_discrete(labels = function(z)
         vapply(z, function(s) paste(strwrap(s, 24), collapse = "\n"), "")) +
-      ggplot2::labs(title = "Estimated effects by state", x = "Estimate and 95% Wald interval", y = NULL,
+      ggplot2::labs(title = "Covariate effects by state", x = "Estimate and 95% Wald interval", y = NULL,
         caption = if (anyNA(effects$std_error)) "Some coefficient intervals are unavailable." else NULL) +
       theme_ssf() + ggplot2::theme(legend.position = "none")
-  } else estimates <- empty("Estimated effects", "No angular or selection coefficient in this model")
+  } else estimates <- empty("Other covariate effects", "No additional covariate coefficients in this model")
   if (panel == "coefficients") return(estimates)
   track <- .plot_ssf(fit, labels, "auto", segment, step_range, coords, palette = palette) +
     ggplot2::labs(title = if (.has_ssf_coordinates(observations, coords)) "Where the inferred states occur" else "Smoothed state probabilities") +
@@ -280,10 +281,15 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
       "State indices require an ecological interpretation. Distributions group observations by their decoded state.",
     "Overlaid densities use a shared bandwidth within each variable; distance densities are on a log10 scale.",
     "Means and SDs describe the intrinsic kernel. Circular angles are relative to the previous heading; radius represents density.",
-    "Intervals condition on the fitted model and labels. The map shows the requested excerpt; other panels use the complete fit.", sep = "\n")
-  patchwork::wrap_plots(A = tab, B = track, C = step_plot, D = turns, E = estimates,
+    paste0(if (length(terms)) "Intervals condition on the fitted model and labels. " else "",
+      "The map shows the requested excerpt; other panels use the complete fit."), sep = "\n")
+  panels <- if (!length(terms)) {
+    patchwork::wrap_plots(A = tab, B = track, C = step_plot, D = turns,
+      design = "AAA\nBCD", heights = c(1.9, 2.7))
+  } else patchwork::wrap_plots(A = tab, B = track, C = step_plot, D = turns, E = estimates,
     design = if (length(terms) > 2L) "AAA\nBCD\nEEE" else "AA\nBC\nDE",
-    heights = if (length(terms) > 2L) c(1.6, 2.4, 3.2) else c(1.6, 2, 2)) +
+    heights = if (length(terms) > 2L) c(1.6, 2.4, 3.2) else c(1.6, 2, 2))
+  panels +
     patchwork::plot_annotation(title = if (inherits(x, "guided_ssf") || !is.null(assessment)) "Ecological state overview" else "Fitted state overview",
       subtitle = sprintf("%d inferred states, %s observed steps%s", fit$n_states,
         format(length(fit$state), big.mark = ","), if (inherits(x, "guided_ssf") || !is.null(assessment))

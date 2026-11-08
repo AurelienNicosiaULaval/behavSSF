@@ -1,5 +1,16 @@
 # Changelog
 
+## behavSSF 0.1.0.9013
+
+- Focus coefficient and contrast panels on additional covariates.
+  Baseline length parameters and turning persistence remain available
+  through explicit term selection.
+- Omit the coefficient panel from movement-only overviews rather than
+  repeat the turning distribution.
+- Show the condor altitude interaction with its state-specific intervals
+  and between-state contrast, without a redundant baseline-persistence
+  panel.
+
 ## behavSSF 0.1.0.9012
 
 - Compare any fitted covariate effect between states with

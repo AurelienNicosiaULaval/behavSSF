@@ -15,7 +15,7 @@ on the fitted model and labels and do not adjust for model or taxonomy selection
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9012</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,9 +103,12 @@ All other panels use the complete fitted observations.</p></dd>
 
 
 <dt id="arg-terms">terms<a class="anchor" aria-label="anchor" href="#arg-terms"></a></dt>
-<dd><p>Optional coefficient names for the coefficient panel. By default
-it shows angular, target, environmental and lag terms, excluding the
-distance-distribution parameters.</p></dd>
+<dd><p>Optional coefficient names for the coefficient or contrast panel.
+The default shows target, environmental and context effects, including
+interactions, but excludes baseline distance parameters and <code>cos_angle</code>.
+Movement distributions already describe those baseline terms. Supply
+explicit names to inspect them. An overview omits its coefficient panel
+when there are no additional covariate effects.</p></dd>
 
 
 <dt id="arg-assessment">assessment<a class="anchor" aria-label="anchor" href="#arg-assessment"></a></dt>

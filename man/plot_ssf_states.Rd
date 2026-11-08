@@ -35,9 +35,12 @@ For input in kilometres, use 1000 to display metres.}
 \item{segment, step_range, coords}{Passed to \code{\link[=plot.ssf_fit]{plot.ssf_fit()}} for the map only.
 All other panels use the complete fitted observations.}
 
-\item{terms}{Optional coefficient names for the coefficient panel. By default
-it shows angular, target, environmental and lag terms, excluding the
-distance-distribution parameters.}
+\item{terms}{Optional coefficient names for the coefficient or contrast panel.
+The default shows target, environmental and context effects, including
+interactions, but excludes baseline distance parameters and \code{cos_angle}.
+Movement distributions already describe those baseline terms. Supply
+explicit names to inspect them. An overview omits its coefficient panel
+when there are no additional covariate effects.}
 
 \item{assessment}{Optional accepted assessment from \code{\link[=assess_taxonomy]{assess_taxonomy()}} for
 this fitted model. This makes a post-fit ecological interpretation visible

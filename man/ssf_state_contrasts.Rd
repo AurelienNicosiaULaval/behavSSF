@@ -15,7 +15,9 @@ ssf_state_contrasts(
 \arguments{
 \item{x}{A fitted \code{ssf_fit} or selected \code{guided_ssf} object.}
 
-\item{terms}{Coefficient names. The default includes all non-radial terms.}
+\item{terms}{Coefficient names. The default shows additional covariate effects,
+excluding baseline distance terms and \code{cos_angle}. Explicit names can
+include those terms. No additional effects gives a zero-row data frame.}
 
 \item{comparisons}{Optional data frame with \code{from} and \code{to} state labels.
 Each contrast is \code{to - from}. The default gives every unordered pair once.}

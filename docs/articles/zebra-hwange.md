@@ -121,8 +121,10 @@ same 96 steps.](zebra-hwange_files/figure-html/posterior-1.png)
 
 The useful result is a set of states that we can interpret, with the
 measurements that support those names. This view brings them together.
-Colours follow the labels in every panel. The map uses the same 48-hour
-excerpt; the table and distributions use all 6,377 observed steps.
+Colours follow the labels in every panel. This movement-only fit has no
+additional covariates, so the overview omits a coefficient panel. The
+map uses the same 48-hour excerpt; the table and distributions use all
+6,377 observed steps.
 
 ``` r
 
@@ -132,8 +134,7 @@ plot(result, type = "states", step_scale = 1000, step_unit = "m",
 ```
 
 ![Ecological overview combining state counts, the zebra trajectory,
-step-length and turning distributions, and coefficient intervals with
-consistent state
+step-length and turning distributions with consistent state
 colours.](zebra-hwange_files/figure-html/ecological-overview-1.png)
 
 Travelling combines long steps with strong persistence in the previous
