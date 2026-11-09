@@ -366,6 +366,8 @@ plot_ssf_states(context$context, panel = "contrasts", assessment = context_label
 joint-covariance 95 percent confidence
 interval.](condor-taxonomies_files/figure-html/context-contrasts-1.png)
 
+### Read the context model on one page
+
 The context model can also be read on one page. Its table, track,
 distributions and altitude intervals all use the same 1,287-step fit and
 share one state legend.
@@ -382,6 +384,16 @@ plot_ssf_states(context$context, assessment = context_labels,
 ![One-page context-model summary of condor flight, including the
 altitude-response intervals and one shared state
 legend.](condor-taxonomies_files/figure-html/context-overview-1.png)
+
+The bottom panel shows the change in the coefficient of `cos_angle` for
+each 100-metre increase in altitude at the start of the step. Altitude is
+centred at 266 metres. The stay probabilities in
+the top table describe transitions between states; the altitude intervals
+describe turning within a state.
+
+In this fit, both within-state 95% intervals include zero. The direction of
+the altitude response remains uncertain in each state. The between-state
+contrast shown above also includes zero, leaving that difference unresolved.
 
 The coefficient panels focus on the additional altitude effect. The
 baseline turning coefficient is already described by the movement views.

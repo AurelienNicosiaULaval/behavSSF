@@ -413,6 +413,9 @@ exact-model initialisation used in its preparation script.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, panel <span class="op">=</span> <span class="st">"contrasts"</span>, assessment <span class="op">=</span> <span class="va">context_labels</span>,</span>
 <span>  terms <span class="op">=</span> <span class="va">context_terms</span>, term_labels <span class="op">=</span> <span class="va">context_names</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condor-taxonomies_files/figure-html/context-contrasts-1.png" class="r-plt" alt="Difference between states in the altitude response with its joint-covariance 95 percent confidence interval." width="720" style="display: block; margin: auto;"></p>
+<div class="section level3">
+<h3 id="read-the-context-model-on-one-page">Read the context model on one page<a class="anchor" aria-label="anchor" href="#read-the-context-model-on-one-page"></a>
+</h3>
 <p>The context model can also be read on one page. Its table, track,
 distributions and altitude intervals all use the same 1,287-step fit and
 share one state legend.</p>
@@ -423,6 +426,15 @@ share one state legend.</p>
 <span>  step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span>, coord_unit <span class="op">=</span> <span class="st">"m"</span>,</span>
 <span>  term_labels <span class="op">=</span> <span class="va">context_names</span>, colours <span class="op">=</span> <span class="va">palette</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condor-taxonomies_files/figure-html/context-overview-1.png" class="r-plt" alt="One-page context-model summary of condor flight, including the altitude-response intervals and one shared state legend." width="1152" style="display: block; margin: auto;"></p>
+<p>The bottom panel shows the change in the coefficient of
+<code>cos_angle</code> for each 100-metre increase in altitude at the
+start of the step. Altitude is centred at 266 metres. The stay
+probabilities in the top table describe transitions between states; the
+altitude intervals describe turning within a state.</p>
+<p>In this fit, both within-state 95% intervals include zero. The
+direction of the altitude response remains uncertain in each state. The
+between-state contrast shown above also includes zero, leaving that
+difference unresolved.</p>
 <p>The coefficient panels focus on the additional altitude effect. The
 baseline turning coefficient is already described by the movement
 views.</p>
@@ -443,6 +455,7 @@ isolate a causal effect of altitude, thermal strength or wind. Any new
 taxonomy based on this example remains exploratory. Define the desired
 contrasts in advance for a confirmatory application, and seek
 independent behavioural evidence.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="keep-a-finer-name-only-when-its-rule-passes">Keep a finer name only when its rule passes<a class="anchor" aria-label="anchor" href="#keep-a-finer-name-only-when-its-rule-passes"></a>
