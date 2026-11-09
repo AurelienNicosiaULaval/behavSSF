@@ -1,7 +1,7 @@
 # Rscript --vanilla path/to/fit-condor.R output-directory
 library(behavSSF)
 args <- commandArgs(trailingOnly = TRUE)
-stopifnot(length(args) == 1L, packageVersion("behavSSF") == "0.1.0.9013")
+stopifnot(length(args) == 1L, packageVersion("behavSSF") == "0.1.0.9014")
 out <- args[1L]
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 started <- Sys.time()

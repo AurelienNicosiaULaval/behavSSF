@@ -71,3 +71,28 @@ test_that("state plots preserve row alignment and gaps", {
   expect_error(plot(result, type = "track"), "coords must identify")
   expect_error(plot(result, step_range = c(1, 42)), "step_range")
 })
+
+test_that("printed SSF covariates retain their intervals and ecological labels", {
+  x <- readRDS(system.file("extdata", "condor-context-fit.rds", package = "behavSSF"))
+  name <- c("cos_angle:altitude_origin_100m" = "Persistence per 100 m above reference altitude")
+  report <- summary(x$context, assessment = x$context_assessment,
+    term_labels = name, step_scale = 1000, step_unit = "m")
+  expect_identical(report$states$state, x$context_assessment$labels)
+  expect_identical(unique(report$ssf_effects$label), unname(name))
+  z <- report$coefficients[report$coefficients$term == names(name), ]
+  expect_equal(report$ssf_effects$lower, z$estimate - qnorm(.975) * z$std_error)
+  expect_equal(report$ssf_effects$upper, z$estimate + qnorm(.975) * z$std_error)
+  expect_equal(report$states$mean_step, summary(x$context)$states$mean_step * 1000)
+  output <- capture.output(returned <- print(x$context, assessment = x$context_assessment,
+    term_labels = name, step_scale = 1000, step_unit = "m"))
+  expect_identical(returned, x$context)
+  expect_true(any(grepl("Persistence per 100 m", output, fixed = TRUE)))
+  expect_false(any(grepl("cos_angle:", output, fixed = TRUE)))
+  expect_true(any(grepl("95% Wald CI", output, fixed = TRUE)))
+  expect_output(print(report), "Baseline movement coefficients", fixed = TRUE)
+  expect_output(print(x$exact), "No additional covariates", fixed = TRUE)
+  x$context$covariance <- NULL
+  expect_output(print(x$context), "CI unavailable", fixed = TRUE)
+  expect_error(summary(x$context, term_labels = c(missing = "Unknown")), "term_labels")
+  expect_error(summary(x$context, step_scale = 0), "step_scale")
+})

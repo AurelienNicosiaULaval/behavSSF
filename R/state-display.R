@@ -68,7 +68,7 @@ ssf_state_summary <- function(x, step_scale = 1, step_unit = "input units", asse
 #' Combines a labelled state table, a track, observed movement distributions
 #' and coefficient intervals. The distributions group the observations by
 #' their Viterbi labels; they are descriptive, not independent validation.
-#' The same state colours are used throughout. Coefficient intervals condition
+#' The overview uses one common state legend. The same colours are used throughout. Coefficient intervals condition
 #' on the fitted model and labels and do not adjust for model or taxonomy selection.
 #'
 #' @inheritParams ssf_state_summary
@@ -95,7 +95,8 @@ ssf_state_summary <- function(x, step_scale = 1, step_unit = "input units", asse
 #' @return A ggplot object, or a patchwork for combined views. ggplot2 is required;
 #'   combined views also require patchwork. The turning-angle panel requires
 #'   ggcircular. Missing observations or covariance
-#'   are identified in the relevant panel.
+#'   are identified in the relevant panel. For an overview with four covariates,
+#'   export at about 12 by 10 inches; add height for more states or covariates.
 #' @export
 plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distributions", "coefficients", "contrasts"),
                             step_scale = 1, step_unit = "input units", segment = NULL,
@@ -159,33 +160,25 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
   number <- function(a) vapply(a, function(v) if (is.finite(v)) format(signif(v, 3), trim = TRUE,
     scientific = FALSE, big.mark = ",") else "Not estimated", "")
   table$.y <- rev(seq_len(nrow(table)))
-  table$.label <- vapply(table$state, function(s) paste(strwrap(s, 23), collapse = "\n"), "")
+  table$.label <- vapply(table$state, function(s) paste(strwrap(s, 30), collapse = "\n"), "")
   table$.count <- sprintf("%s (%.1f%%)", format(table$n_steps, big.mark = ",", trim = TRUE), 100 * table$fraction)
-  table$.length <- number(table$mean_step)
-  table$.sd <- paste("SD", number(table$sd_step))
+  table$.length <- paste0(number(table$mean_step), " (", number(table$sd_step), ")")
   table$.stay <- if (length(dim(fit$transition)) == 2L) sprintf("%.1f%%", 100 * table$stay_min) else
     sprintf("%.0f%%-%.0f%%", 100 * table$stay_min, 100 * table$stay_max)
-  table$.run <- if (length(dim(fit$transition)) > 2L) "Range across hours" else if (fit$n_states == 1L)
-    "One-state model" else paste(number(table$mean_run_steps), "steps per run")
-  headings <- data.frame(x = c(.2, 3.3, 6.4, 9.5),
-    label = c("State", "Observed steps", paste0("Mean step (", step_unit, ")"),
-      "Stay in state"))
+  headings <- data.frame(x = c(.2, 4.5, 7.1, 10),
+    label = c("State", "Decoded steps (%)", paste0("Mean (SD), ", step_unit), "Stay probability"))
   tab <- ggplot2::ggplot(table) +
-    ggplot2::geom_hline(ggplot2::aes(yintercept = .data$.y - .47), colour = "#E5E5E5", linewidth = .35) +
+    ggplot2::geom_hline(ggplot2::aes(yintercept = .data$.y - .48), colour = "#E5E5E5", linewidth = .35) +
     ggplot2::geom_text(data = headings, ggplot2::aes(x = .data$x, label = .data$label),
-      y = nrow(table) + .7, inherit.aes = FALSE, hjust = 0, size = 3.6, fontface = "bold", colour = ink) +
+      y = nrow(table) + .75, inherit.aes = FALSE, hjust = 0, size = 3.6, fontface = "bold", colour = ink) +
     ggplot2::geom_text(ggplot2::aes(x = .2, y = .data$.y, label = .data$.label, colour = .data$state),
-      hjust = 0, size = 4, fontface = "bold", lineheight = .95) +
-    ggplot2::geom_text(ggplot2::aes(x = 3.3, y = .data$.y + .23, label = .data$.count), hjust = 0, size = 3.7, colour = ink) +
-    ggplot2::geom_segment(ggplot2::aes(x = 3.3, xend = 5.4, y = .data$.y - .25, yend = .data$.y - .25), colour = "#EEEEEE", linewidth = 3) +
-    ggplot2::geom_segment(ggplot2::aes(x = 3.3, xend = 3.3 + 2.1 * .data$fraction,
-      y = .data$.y - .25, yend = .data$.y - .25, colour = .data$state), linewidth = 3) +
-    ggplot2::geom_text(ggplot2::aes(x = 6.4, y = .data$.y + .24, label = .data$.length), hjust = 0, size = 4, colour = ink) +
-    ggplot2::geom_text(ggplot2::aes(x = 6.4, y = .data$.y - .24, label = .data$.sd), hjust = 0, size = 3.2, colour = muted) +
-    ggplot2::geom_text(ggplot2::aes(x = 9.5, y = .data$.y + .24, label = .data$.stay), hjust = 0, size = 4, colour = ink) +
-    ggplot2::geom_text(ggplot2::aes(x = 9.5, y = .data$.y - .24, label = .data$.run), hjust = 0, size = 3.1, colour = muted) +
-    ggplot2::scale_colour_manual(values = palette) +
-    ggplot2::coord_cartesian(xlim = c(0, 12.2), ylim = c(.35, nrow(table) + 1), clip = "off") +
+      hjust = 0, size = 3.8, fontface = "bold", lineheight = .95, show.legend = FALSE) +
+    ggplot2::geom_text(ggplot2::aes(x = 4.5, y = .data$.y, label = .data$.count), hjust = 0, size = 3.8, colour = ink) +
+    ggplot2::geom_text(ggplot2::aes(x = 7.1, y = .data$.y, label = .data$.length), hjust = 0, size = 3.8, colour = ink) +
+    ggplot2::geom_text(ggplot2::aes(x = 10, y = .data$.y, label = .data$.stay), hjust = 0, size = 3.8, colour = ink) +
+    ggplot2::scale_colour_manual(values = palette, limits = labels, name = NULL) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = 0)) +
+    ggplot2::coord_cartesian(xlim = c(0, 12.5), ylim = c(.4, nrow(table) + 1.2), clip = "off") +
     theme_ssf() + ggplot2::theme(axis.text = ggplot2::element_blank(), axis.title = ggplot2::element_blank(),
       panel.grid.major = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank(), legend.position = "none")
   if (panel == "table") return(tab)
@@ -226,7 +219,9 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
         ggcircular::scale_x_circular_degrees(breaks = c(0, pi / 2, pi, 3 * pi / 2),
           labels = c("0\u00b0", "+90\u00b0", "180\u00b0", "-90\u00b0")) +
         ggplot2::scale_colour_manual(values = palette, name = NULL, drop = FALSE) +
-        ggplot2::scale_y_continuous(limits = c(0, NA)) +
+        ggplot2::scale_y_continuous(limits = c(0, NA), breaks = function(z) {
+          ticks <- pretty(z); ticks[ticks > 0 & ticks <= z[2L]]
+        }) +
         ggcircular::coord_circular(zero = "north", direction = "counterclockwise", clip = "off") +
         ggplot2::labs(title = "Observed turning-angle densities",
           subtitle = "0\u00b0 = straight ahead; 180\u00b0 = reversal", x = NULL, y = NULL) +
@@ -246,16 +241,7 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
     effects$lower <- effects$estimate - stats::qnorm(.975) * effects$std_error
     effects$upper <- effects$estimate + stats::qnorm(.975) * effects$std_error
     effects$term <- factor(effects$term, levels = terms)
-    displayed_terms <- gsub("_", " ", terms, fixed = TRUE)
-    displayed_terms[terms == "cos_angle"] <- "Previous heading"
-    displayed_terms[terms == "cos_diff_theta_to_target"] <- "Direction to target"
-    names(displayed_terms) <- terms
-    if (!is.null(term_labels)) {
-      if (!is.character(term_labels) || is.null(names(term_labels)) || anyNA(term_labels) ||
-          anyDuplicated(names(term_labels)) || !all(names(term_labels) %in% terms))
-        .stop("term_labels must be named by displayed coefficient terms.")
-      displayed_terms[names(term_labels)] <- term_labels
-    }
+    displayed_terms <- .ssf_term_labels(terms, term_labels)
     estimates <- ggplot2::ggplot(effects, ggplot2::aes(x = .data$estimate, y = .data$state, colour = .data$state)) +
       ggplot2::geom_vline(xintercept = 0, linetype = "dashed", colour = "#AAAAAA", linewidth = .4) +
       ggplot2::geom_linerange(ggplot2::aes(xmin = .data$lower, xmax = .data$upper), linewidth = .55, na.rm = TRUE) +
@@ -276,23 +262,38 @@ plot_ssf_states <- function(x, panel = c("overview", "table", "track", "distribu
     x = paste0("Easting (", coord_unit, ")"), y = paste0("Northing (", coord_unit, ")"))
   if (panel == "track") return(track + ggplot2::theme(legend.position = "bottom"))
   if (!requireNamespace("patchwork", quietly = TRUE)) .stop("Install patchwork for the combined ecological state overview.")
+  # One guide source keeps the state order and colours even when a state has
+  # too few observations for a density. Other panels keep their own guides
+  # when requested separately, but contribute none to this combined view.
+  tab <- tab + ggplot2::geom_point(ggplot2::aes(x = .2, y = .data$.y, colour = .data$state),
+    alpha = 0, size = 3, show.legend = TRUE) +
+    ggplot2::guides(colour = ggplot2::guide_legend(ncol = min(3L, length(labels)),
+      override.aes = list(alpha = 1, size = 3))) +
+    ggplot2::theme(legend.position = "bottom")
+  step_plot <- step_plot + ggplot2::labs(title = "Step lengths") +
+    ggplot2::guides(colour = "none", fill = "none")
+  turns <- turns + ggplot2::labs(title = "Turning angles") +
+    ggplot2::guides(colour = "none")
+  track <- track + ggplot2::labs(title = if (.has_ssf_coordinates(observations, coords))
+    "Trajectory" else "State probabilities") + ggplot2::guides(colour = "none", fill = "none")
+  estimates <- estimates + ggplot2::guides(colour = "none")
   caption <- paste(
-    if (inherits(x, "guided_ssf") || !is.null(assessment)) "Labels follow the chosen ecological taxonomy. Distributions group observations by their decoded state." else
-      "State indices require an ecological interpretation. Distributions group observations by their decoded state.",
-    "Overlaid densities use a shared bandwidth within each variable; distance densities are on a log10 scale.",
-    "Means and SDs describe the intrinsic kernel. Circular angles are relative to the previous heading; radius represents density.",
-    paste0(if (length(terms)) "Intervals condition on the fitted model and labels. " else "",
-      "The map shows the requested excerpt; other panels use the complete fit."), sep = "\n")
+    "Densities: observations grouped by decoded state, with shared bandwidths. Angles: relative to the previous heading.",
+    paste0("Table: intrinsic kernel mean and SD. ", if (length(terms)) "Intervals: conditional 95% Wald CIs. " else "",
+      if (length(dim(fit$transition)) > 2L) "Stay: range across hours. " else "",
+      "Trajectory: requested excerpt; other panels: complete fit."), sep = "\n")
   panels <- if (!length(terms)) {
     patchwork::wrap_plots(A = tab, B = track, C = step_plot, D = turns,
-      design = "AAA\nBCD", heights = c(1.9, 2.7))
+      design = "AAA\nBCD", heights = c(max(1.4, .4 * fit$n_states), 3.1), guides = "collect")
   } else patchwork::wrap_plots(A = tab, B = track, C = step_plot, D = turns, E = estimates,
-    design = if (length(terms) > 2L) "AAA\nBCD\nEEE" else "AA\nBC\nDE",
-    heights = if (length(terms) > 2L) c(1.6, 2.4, 3.2) else c(1.6, 2, 2))
-  panels +
+    design = "AAA\nBCD\nEEE", guides = "collect",
+    heights = c(max(1.3, .38 * fit$n_states), 2.6,
+      max(1.6, ceiling(length(terms) / 2) * (.4 * fit$n_states + .55))))
+  panels <- panels +
     patchwork::plot_annotation(title = if (inherits(x, "guided_ssf") || !is.null(assessment)) "Ecological state overview" else "Fitted state overview",
-      subtitle = sprintf("%d inferred states, %s observed steps%s", fit$n_states,
-        format(length(fit$state), big.mark = ","), if (inherits(x, "guided_ssf") || !is.null(assessment))
-          paste0(". Selected: ", paste(labels, collapse = " / ")) else ""),
+      subtitle = sprintf("%d inferred states | %s decoded steps | %d segments", fit$n_states,
+        format(length(fit$state), big.mark = ","), length(unique(fit$observations$ID))),
       caption = caption, theme = theme_ssf())
+  panels & ggplot2::theme(legend.position = "bottom", legend.title = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(size = 10), legend.margin = ggplot2::margin(0, 0, 0, 0))
 }

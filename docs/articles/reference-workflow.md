@@ -52,8 +52,26 @@ data <- data.frame(ID = 1L, stratum = rep(seq_len(n_steps), each = 2),
                    x = as.vector(rbind(chosen, 1 - chosen)))
 fit <- fit_ssf(data, ~ x, n_states = 1L, seed = 93)
 print(fit)
-#> Homogeneous HMM-SSF: 1 state(s), 20 observed steps in 1 segment(s)
-#> Log likelihood: -11.2467 | converged: TRUE | positive Hessian: TRUE
+#> Fitted HMM-SSF
+#> 1 state(s) | 20 decoded steps | 1 segment(s)
+#> Step-length family: gamma | normalisation: importance | measure: unspecified
+#> Log likelihood: -11.2467
+#> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 2.75e-13
+#>
+#> States (decoded steps)
+#>  State Steps Share
+#>  S1    20    100.0%
+#>
+#> Additional SSF covariates by state
+#>   Estimate [95% Wald CI]
+#>
+#>   S1
+#>     x: -1.10 [-2.11, -0.0865]
+#>
+#>   Effects condition on the other model terms.
+#>   CIs condition on the fitted model and labels; they do not account for their
+#>   selection.
+#>   Use ssf_state_contrasts() to compare coefficients between states.
 c(estimate = coef(fit)[1, 1], reference = log(5 / 15))
 #>  estimate reference
 #> -1.098612 -1.098612
@@ -204,8 +222,21 @@ rejected.
 steps <- prepare_ssf_steps(observed, density_measure = "area")
 exact_model <- fit_ssf(steps, n_states = 1L, normalization = "exact", seed = 321)
 print(exact_model)
-#> Homogeneous HMM-SSF: 1 state(s), 80 observed steps in 1 segment(s)
-#> Log likelihood: -140.145 | converged: TRUE | positive Hessian: TRUE
+#> Fitted HMM-SSF
+#> 1 state(s) | 80 decoded steps | 1 segment(s)
+#> Step-length family: gamma | normalisation: exact | measure: area
+#> Log likelihood: -140.145
+#> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 6.46e-08
+#>
+#> States (decoded steps)
+#>  State Steps Share  Mean step (input units)
+#>  S1    80    100.0% 0.705
+#>
+#> Additional SSF covariates by state
+#>   No additional covariates in this model.
+#>
+#> Mean steps describe the intrinsic kernel; hourly and lag effects are held at
+#> baseline.
 ssf_log_normalizer(coef(exact_model), convention = "area")
 #>              S1
 #> [1,] -0.2980994

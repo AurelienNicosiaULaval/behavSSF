@@ -44,7 +44,7 @@ result <- fit_guided_ssf(
   normalization = "exact", n_starts = 8, short_iter = 100, long_iter = 900,
   seed = 1729
 )
-result
+print(result, step_scale = 1000, step_unit = "m")
 ```
 
 With the default taxonomy, the function first tries habitat-directed
@@ -75,6 +75,11 @@ knitr::kable(data.frame(
   check.names = FALSE
 ))
 ```
+
+`print()` lists the states and their counts in readable form. If the model
+contains additional covariates, it gives their estimates and conditional
+95% intervals under each state. `summary()` also shows the baseline movement
+coefficients and transition probabilities.
 
 The counts come from the Viterbi sequence, which assigns one label to each
 step. The means come from the fitted movement distributions.

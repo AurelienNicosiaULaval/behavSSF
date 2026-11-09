@@ -15,7 +15,7 @@ movement terms and their density convention are available."><meta property="og:i
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@ movement terms and their density convention are available."><meta property="og:i
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Summarise an HMM-SSF fit</h1>
-      <small class="dont-index">Source: <a href="https://github.com/AurelienNicosiaULaval/behavSSF/blob/HEAD/R/summary.R" class="external-link"><code>R/summary.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/AurelienNicosiaULaval/behavSSF/blob/HEAD/R/assessment.R" class="external-link"><code>R/assessment.R</code></a>, <a href="https://github.com/AurelienNicosiaULaval/behavSSF/blob/HEAD/R/fit.R" class="external-link"><code>R/fit.R</code></a>, <a href="https://github.com/AurelienNicosiaULaval/behavSSF/blob/HEAD/R/summary.R" class="external-link"><code>R/summary.R</code></a></small>
       <div class="d-none name"><code>summary.ssf_fit.Rd</code></div>
     </div>
 
@@ -57,11 +57,47 @@ movement terms and their density convention are available.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'ssf_fit'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'guided_ssf'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fl">3L</span>,</span>
+<span>  assessment <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  step_scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  step_unit <span class="op">=</span> <span class="st">"input units"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'ssf_fit'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fl">3L</span>,</span>
+<span>  assessment <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  step_scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  step_unit <span class="op">=</span> <span class="st">"input units"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'ssf_fit'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  assessment <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  step_scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  step_unit <span class="op">=</span> <span class="st">"input units"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'guided_ssf'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  assessment <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  step_scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  step_unit <span class="op">=</span> <span class="st">"input units"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'summary_ssf_fit'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, digits <span class="op">=</span> <span class="fl">4L</span>, <span class="va">...</span><span class="op">)</span></span>
@@ -74,28 +110,48 @@ movement terms and their density convention are available.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
-<dd><p>An object from <code><a href="fit_ssf.html">fit_ssf()</a></code> or <code><a href="fit_guided_ssf.html">fit_guided_ssf()</a></code>.</p></dd>
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>A fitted object or a summary returned by one of these methods.</p></dd>
+
+
+<dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
+<dd><p>Number of significant digits to display.</p></dd>
+
+
+<dt id="arg-assessment">assessment<a class="anchor" aria-label="anchor" href="#arg-assessment"></a></dt>
+<dd><p>Optional accepted assessment of the same fit, used for
+ecological state labels.</p></dd>
+
+
+<dt id="arg-term-labels">term_labels<a class="anchor" aria-label="anchor" href="#arg-term-labels"></a></dt>
+<dd><p>Optional named character vector of readable names for
+additional covariates, including reference categories when known.
+Factor coding is not reconstructed from the coefficient names.</p></dd>
+
+
+<dt id="arg-step-scale">step_scale<a class="anchor" aria-label="anchor" href="#arg-step-scale"></a></dt>
+<dd><p>Positive multiplier for displayed mean step lengths.</p></dd>
+
+
+<dt id="arg-step-unit">step_unit<a class="anchor" aria-label="anchor" href="#arg-step-unit"></a></dt>
+<dd><p>Distance unit after applying <code>step_scale</code>. Units are not inferred.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Reserved for the generic.</p></dd>
 
 
-<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A summary returned by one of these methods.</p></dd>
-
-
-<dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
-<dd><p>Number of significant digits to display.</p></dd>
+<dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
+<dd><p>An object from <code><a href="fit_ssf.html">fit_ssf()</a></code> or <code><a href="fit_guided_ssf.html">fit_guided_ssf()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with a state table (<code>states</code>), step-selection estimates
-and standard errors (<code>coefficients</code>), transition probabilities
+and standard errors (<code>coefficients</code>), additional covariate effects with
+conditional 95% Wald intervals (<code>ssf_effects</code>), transition probabilities
 (<code>transition</code>) and optimisation diagnostics. Kernel means are in the
-input step-length units and describe the baseline kernel when there are
+chosen step-length units and describe the baseline kernel when there are
 lag or hourly effects. Standard errors are available when the fit has
 a covariance matrix. Daily transition arrays retain the hour dimension.
 Guided summaries also contain <code>status</code>, <code>taxonomy</code> and <code>candidates</code>.

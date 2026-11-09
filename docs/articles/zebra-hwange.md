@@ -33,13 +33,30 @@ result <- fit_guided_ssf(
   normalization = "exact", n_starts = 8, short_iter = 100, long_iter = 900,
   seed = 1729
 )
-result
-#> Guided HMM-SSF with 6377 observed steps
+print(result, step_scale = 1000, step_unit = "m")
 #> Candidate taxonomies in the order tried
 #>   HDT_F_R (Habitat-directed travelling / Foraging / Resting) [Rejected]
 #>     The 95% confidence interval for the travelling state's target effect must
 #>     lie entirely above zero.
 #>   T_F_R (Travelling / Foraging / Resting) [Selected]
+#>
+#> Fitted HMM-SSF
+#> 3 state(s) | 6,377 decoded steps | 28 segment(s)
+#> Step-length family: gamma | normalisation: exact | measure: area
+#> Log likelihood: 12088.31
+#> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 9.91e-07
+#>
+#> States (decoded steps)
+#>  State      Steps Share Mean step (m)
+#>  Travelling  805  12.6% 730.0
+#>  Foraging   2662  41.7% 172.0
+#>  Resting    2910  45.6%  36.7
+#>
+#> Additional SSF covariates by state
+#>   No additional covariates in this model.
+#>
+#> Mean steps describe the intrinsic kernel; hourly and lag effects are held at
+#> baseline.
 ```
 
 With the default taxonomy, the function first tries habitat-directed
@@ -77,6 +94,12 @@ knitr::kable(data.frame(
 | Travelling |   805 |           730 |
 | Foraging   |  2662 |           172 |
 | Resting    |  2910 |            37 |
+
+[`print()`](https://rdrr.io/r/base/print.html) lists the states and
+their counts in readable form. If the model contains additional
+covariates, it gives their estimates and conditional 95% intervals under
+each state. [`summary()`](https://rdrr.io/r/base/summary.html) also
+shows the baseline movement coefficients and transition probabilities.
 
 The counts come from the Viterbi sequence, which assigns one label to
 each step. The means come from the fitted movement distributions.
@@ -182,33 +205,49 @@ summary(length_fit)
 #> Candidate taxonomies in the order tried
 #>   length_regimes (Short / Intermediate / Long) [Selected]
 #>
-#> HMM-SSF summary
-#> 6377 observed steps in 28 segment(s)
-#> Normalisation: exact | density measure: area
-#> Step-length family: weibull
-#> Log likelihood: 12084
+#> Fitted HMM-SSF
+#> 3 state(s) | 6,377 decoded steps | 28 segment(s)
+#> Step-length family: weibull | normalisation: exact | measure: area
+#> Log likelihood: 12083.89
 #> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 3.833e-13
 #>
-#> States (Viterbi assignments)
-#>         state n_steps fraction mean_step persistence
-#>         Short    2786   0.4369   0.03726    -0.05815
-#>  Intermediate    2732   0.4284   0.16366     0.61340
-#>          Long     859   0.1347   0.68498     2.31714
+#> States (decoded steps)
+#>  State        Steps Share Mean step (input units)
+#>  Short        2786  43.7% 0.03726
+#>  Intermediate 2732  42.8% 0.16370
+#>  Long          859  13.5% 0.68500
 #>
-#> Step-selection coefficients
-#>         state                     term estimate std_error
-#>         Short               step_shape  0.98177  0.018046
-#>         Short               step_scale  0.03696  0.001939
-#>         Short                cos_angle -0.05815  0.034849
-#>         Short cos_diff_theta_to_target  0.04444  0.032262
-#>  Intermediate               step_shape  1.27839  0.041199
-#>  Intermediate               step_scale  0.17659  0.008373
-#>  Intermediate                cos_angle  0.61340  0.051760
-#>  Intermediate cos_diff_theta_to_target  0.12475  0.036643
-#>          Long               step_shape  1.57813  0.071365
-#>          Long               step_scale  0.76300  0.033531
-#>          Long                cos_angle  2.31714  0.153591
-#>          Long cos_diff_theta_to_target  0.14002  0.087851
+#> Additional SSF covariates by state
+#>   Estimate [95% Wald CI]
+#>
+#>   Short
+#>     Direction to target: 0.04444 [-0.01880, 0.1077]
+#>
+#>   Intermediate
+#>     Direction to target: 0.1247 [0.05293, 0.1966]
+#>
+#>   Long
+#>     Direction to target: 0.1400 [-0.03217, 0.3122]
+#>
+#>   Effects condition on the other model terms.
+#>   CIs condition on the fitted model and labels; they do not account for their
+#>   selection.
+#>   Use ssf_state_contrasts() to compare coefficients between states.
+#>
+#> Mean steps describe the intrinsic kernel; hourly and lag effects are held at
+#> baseline.
+#>
+#> Baseline movement coefficients (estimate and standard error)
+#>         state       term estimate std_error
+#>         Short step_shape  0.98177  0.018046
+#>         Short step_scale  0.03696  0.001939
+#>         Short  cos_angle -0.05815  0.034849
+#>  Intermediate step_shape  1.27839  0.041199
+#>  Intermediate step_scale  0.17659  0.008373
+#>  Intermediate  cos_angle  0.61340  0.051760
+#>          Long step_shape  1.57813  0.071365
+#>          Long step_scale  0.76300  0.033531
+#>          Long  cos_angle  2.31714  0.153591
 #>
 #> Transition probabilities (rows are origin states)
 #>               Short Intermediate    Long

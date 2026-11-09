@@ -1,3 +1,15 @@
+# behavSSF 0.1.0.9014
+
+* The ecological overview combines the trajectory, movement densities and
+  additional covariate intervals on one page with a single state legend.
+  Shorter titles and a compact state table leave more room for the plots.
+* `print()` now reports decoded state counts and additional SSF covariates
+  with conditional 95% Wald intervals, grouped by state. Readable term labels
+  can include known reference categories. `summary()` also retains the
+  baseline movement coefficients and transition probabilities.
+* Print and summary methods accept an assessment, readable covariate names
+  and distance units. Summaries return the displayed effects in `ssf_effects`.
+
 # behavSSF 0.1.0.9013
 
 - Focus coefficient and contrast panels on additional covariates. Baseline length parameters and turning persistence remain available through explicit term selection.

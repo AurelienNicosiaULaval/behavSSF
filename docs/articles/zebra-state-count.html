@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
+<li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/zebra-hwange.html">Behavioural states of a Hwange zebra</a></li>
@@ -683,7 +683,61 @@ are different quantities.</p>
 <span>  coord_unit <span class="op">=</span> <span class="st">"km"</span>, segment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">fit3</span><span class="op">$</span><span class="va">observations</span><span class="op">$</span><span class="va">ID</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  step_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">96</span><span class="op">)</span>, terms <span class="op">=</span> <span class="va">effect_terms</span>, term_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="va">effect_names</span>, <span class="va">effect_terms</span><span class="op">)</span>,</span>
 <span>  colours <span class="op">=</span> <span class="va">state_colours</span><span class="op">)</span></span></code></pre></div>
-<p><img src="zebra-state-count_files/figure-html/ecological-habitat-overview-1.png" class="r-plt" alt="Ecological labels linked to a 48-hour trajectory, observed movements and directional persistence in the three-state habitat model." width="100%" style="display: block; margin: auto;"></p>
+<p><img src="zebra-state-count_files/figure-html/ecological-habitat-overview-1.png" class="r-plt" alt="One-page zebra summary with a state table, a 48-hour trajectory, overlaid length and circular turning densities, four covariate intervals and one common state legend." width="100%" style="display: block; margin: auto;"></p>
+<p>One common legend links the states across the page. To save this
+overview, use
+<code>ggplot2::ggsave("zebra-states.pdf", width = 12, height = 10)</code>
+after drawing it. More covariates or longer state names may need a
+taller page.</p>
+<p>The console gives the same covariate estimates and intervals, grouped
+by state. Reference habitats are supplied in the labels below; the
+package does not guess factor coding from coefficient names.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit3</span>, assessment <span class="op">=</span> <span class="va">ecology</span>, term_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="va">effect_names</span>, <span class="va">effect_terms</span><span class="op">)</span>,</span>
+<span>  step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Fitted HMM-SSF</span></span>
+<span><span class="co">#&gt; 3 state(s) | 6,375 decoded steps | 26 segment(s)</span></span>
+<span><span class="co">#&gt; Step-length family: gamma | normalisation: importance | measure: area </span></span>
+<span><span class="co">#&gt; Log likelihood: 12327.57 </span></span>
+<span><span class="co">#&gt; Converged: TRUE | positive Hessian: TRUE | scaled gradient: 4.66e-10 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; States (decoded steps)</span></span>
+<span><span class="co">#&gt;  State                       Steps Share Mean step (m)</span></span>
+<span><span class="co">#&gt;  Local movement              2733  42.9%  33.8        </span></span>
+<span><span class="co">#&gt;  Persistent grassland travel 1022  16.0% 698.0        </span></span>
+<span><span class="co">#&gt;  Grassland movement          2620  41.1% 162.0        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Additional SSF covariates by state</span></span>
+<span><span class="co">#&gt;   Estimate [95% Wald CI]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Local movement</span></span>
+<span><span class="co">#&gt;     Direction to grassland target: 0.0456 [-0.0182, 0.110]</span></span>
+<span><span class="co">#&gt;     Bushed grassland vs grassland: -0.119 [-0.375, 0.137]</span></span>
+<span><span class="co">#&gt;     Bushland vs grassland: -0.138 [-0.545, 0.269]</span></span>
+<span><span class="co">#&gt;     Woodland vs grassland: -0.133 [-1.07, 0.805]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Persistent grassland travel</span></span>
+<span><span class="co">#&gt;     Direction to grassland target: 0.0148 [-0.141, 0.171]</span></span>
+<span><span class="co">#&gt;     Bushed grassland vs grassland: -1.76 [-2.02, -1.51]</span></span>
+<span><span class="co">#&gt;     Bushland vs grassland: -3.03 [-3.35, -2.70]</span></span>
+<span><span class="co">#&gt;     Woodland vs grassland: -3.34 [-3.76, -2.92]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Grassland movement</span></span>
+<span><span class="co">#&gt;     Direction to grassland target: 0.0606 [-0.0122, 0.133]</span></span>
+<span><span class="co">#&gt;     Bushed grassland vs grassland: -0.603 [-0.791, -0.415]</span></span>
+<span><span class="co">#&gt;     Bushland vs grassland: -1.48 [-1.79, -1.18]</span></span>
+<span><span class="co">#&gt;     Woodland vs grassland: -1.20 [-1.61, -0.784]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Effects condition on the other model terms.</span></span>
+<span><span class="co">#&gt;   CIs condition on the fitted model and labels; they do not account for their</span></span>
+<span><span class="co">#&gt;   selection.</span></span>
+<span><span class="co">#&gt;   Use ssf_state_contrasts() to compare coefficients between states.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Mean steps describe the intrinsic kernel; hourly and lag effects are held at</span></span>
+<span><span class="co">#&gt; baseline.</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> adds the baseline movement coefficients and
+transition matrix. Its <code>ssf_effects</code> table contains the
+displayed covariate estimates and CIs.</p>
 <p>The map tells us where the inferred states occur. The distributions
 describe their movements. The coefficient intervals show which
 environmental and directional claims the model supports. Reading them
@@ -703,7 +757,7 @@ your rules.</p>
 set cannot have its own conditional selection effect. It can interact
 with a movement or endpoint term. The <a href="condor-taxonomies.html">condor example</a> uses altitude known at
 the start of a step to modify turning persistence.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ssf_state_contrasts.html">ssf_state_contrasts</a></span><span class="op">(</span><span class="va">fit3</span>, terms <span class="op">=</span> <span class="st">"habitatwoodland"</span>, assessment <span class="op">=</span> <span class="va">ecology</span><span class="op">)</span></span>
 <span><span class="co">#&gt;              term                        from                          to</span></span>
 <span><span class="co">#&gt; 1 habitatwoodland              Local movement Persistent grassland travel</span></span>

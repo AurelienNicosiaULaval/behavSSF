@@ -70,3 +70,22 @@ test_that("default coefficient views show covariates without repeating baseline 
   expect_length(plot_ssf_states(x$exact), 4L)
   expect_length(plot_ssf_states(x$context), 5L)
 })
+
+test_that("the overview has one complete common state legend", {
+  skip_if_not_installed("ggplot2")
+  skip_if_not_installed("patchwork")
+  skip_if_not_installed("ggcircular")
+  x <- readRDS(system.file("extdata", "condor-context-fit.rds", package = "behavSSF"))
+  labels <- x$context_assessment$labels
+  palette <- stats::setNames(c("#13726B", "#A54C24"), labels)
+  p <- plot_ssf_states(x$context, assessment = x$context_assessment, colours = palette)
+  grDevices::pdf(file = NULL)
+  g <- patchwork::patchworkGrob(p)
+  grDevices::dev.off()
+  guides <- g$grobs[grepl("^guide-box$", g$layout$name)]
+  expect_length(guides, 1L)
+  expect_equal(sum(guides[[1L]]$layout$name == "guides"), 1L)
+  expect_identical(p[[1]]$scales$get_scales("colour")$limits, labels)
+  expect_identical(unname(p[[1]]$scales$get_scales("colour")$palette(2L)), unname(palette))
+  expect_equal(nrow(p[[5]]$data), 2L)
+})

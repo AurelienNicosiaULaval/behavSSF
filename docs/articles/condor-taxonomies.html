@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
+<li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/zebra-hwange.html">Behavioural states of a Hwange zebra</a></li>
@@ -131,9 +131,25 @@ alongside the custom rules.</p>
 <span>  n_starts <span class="op">=</span> <span class="fl">8</span>, short_iter <span class="op">=</span> <span class="fl">100</span>, long_iter <span class="op">=</span> <span class="fl">900</span>, seed <span class="op">=</span> <span class="fl">1729</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Guided HMM-SSF with 1304 observed steps</span></span>
 <span><span class="co">#&gt; Candidate taxonomies in the order tried</span></span>
 <span><span class="co">#&gt;   flight_modes (Circling-like flight / Directed flight) [Selected]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Fitted HMM-SSF</span></span>
+<span><span class="co">#&gt; 2 state(s) | 1,304 decoded steps | 17 segment(s)</span></span>
+<span><span class="co">#&gt; Step-length family: gamma | normalisation: exact | measure: area </span></span>
+<span><span class="co">#&gt; Log likelihood: 5805.247 </span></span>
+<span><span class="co">#&gt; Converged: TRUE | positive Hessian: TRUE | scaled gradient: 2.59e-07 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; States (decoded steps)</span></span>
+<span><span class="co">#&gt;  State                Steps Share Mean step (input units)</span></span>
+<span><span class="co">#&gt;  Circling-like flight 936   71.8% 0.0435                 </span></span>
+<span><span class="co">#&gt;  Directed flight      368   28.2% 0.0667                 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Additional SSF covariates by state</span></span>
+<span><span class="co">#&gt;   No additional covariates in this model.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Mean steps describe the intrinsic kernel; hourly and lag effects are held at</span></span>
+<span><span class="co">#&gt; baseline.</span></span>
 <span><span class="va">result</span><span class="op">$</span><span class="va">history</span><span class="op">$</span><span class="va">flight_modes</span><span class="op">$</span><span class="va">assessment</span><span class="op">$</span><span class="va">checks</span></span>
 <span><span class="co">#&gt;           converged             hessian               score        valid_kernel </span></span>
 <span><span class="co">#&gt;                TRUE                TRUE                TRUE                TRUE </span></span>
@@ -397,6 +413,16 @@ exact-model initialisation used in its preparation script.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, panel <span class="op">=</span> <span class="st">"contrasts"</span>, assessment <span class="op">=</span> <span class="va">context_labels</span>,</span>
 <span>  terms <span class="op">=</span> <span class="va">context_terms</span>, term_labels <span class="op">=</span> <span class="va">context_names</span><span class="op">)</span></span></code></pre></div>
 <p><img src="condor-taxonomies_files/figure-html/context-contrasts-1.png" class="r-plt" alt="Difference between states in the altitude response with its joint-covariance 95 percent confidence interval." width="720" style="display: block; margin: auto;"></p>
+<p>The context model can also be read on one page. Its table, track,
+distributions and altitude intervals all use the same 1,287-step fit and
+share one state legend.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_ssf_states.html">plot_ssf_states</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span>, assessment <span class="op">=</span> <span class="va">context_labels</span>,</span>
+<span>  coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x0_m"</span>, <span class="st">"y0_m"</span>, <span class="st">"x_m"</span>, <span class="st">"y_m"</span><span class="op">)</span>,</span>
+<span>  segment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">context</span><span class="op">$</span><span class="va">context</span><span class="op">$</span><span class="va">observations</span><span class="op">$</span><span class="va">ID</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span>, coord_unit <span class="op">=</span> <span class="st">"m"</span>,</span>
+<span>  term_labels <span class="op">=</span> <span class="va">context_names</span>, colours <span class="op">=</span> <span class="va">palette</span><span class="op">)</span></span></code></pre></div>
+<p><img src="condor-taxonomies_files/figure-html/context-overview-1.png" class="r-plt" alt="One-page context-model summary of condor flight, including the altitude-response intervals and one shared state legend." width="1152" style="display: block; margin: auto;"></p>
 <p>The coefficient panels focus on the additional altitude effect. The
 baseline turning coefficient is already described by the movement
 views.</p>
@@ -426,7 +452,7 @@ interval for the between-state altitude response includes zero. We keep
 the original flight labels; this example does not support a more
 specific altitude-associated directed-flight label.</p>
 <p>A taxonomy can make that requirement explicit:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">altitude_modes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ssf_taxonomy.html">ssf_taxonomy</a></span><span class="op">(</span></span>
 <span>  <span class="st">"altitude_modes"</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Circling-like flight"</span>, <span class="st">"Altitude-associated directed flight"</span><span class="op">)</span>,</span>

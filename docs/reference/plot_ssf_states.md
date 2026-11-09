@@ -3,9 +3,10 @@
 Combines a labelled state table, a track, observed movement
 distributions and coefficient intervals. The distributions group the
 observations by their Viterbi labels; they are descriptive, not
-independent validation. The same state colours are used throughout.
-Coefficient intervals condition on the fitted model and labels and do
-not adjust for model or taxonomy selection.
+independent validation. The overview uses one common state legend. The
+same colours are used throughout. Coefficient intervals condition on the
+fitted model and labels and do not adjust for model or taxonomy
+selection.
 
 ## Usage
 
@@ -102,4 +103,5 @@ plot_ssf_states(
 A ggplot object, or a patchwork for combined views. ggplot2 is required;
 combined views also require patchwork. The turning-angle panel requires
 ggcircular. Missing observations or covariance are identified in the
-relevant panel.
+relevant panel. For an overview with four covariates, export at about 12
+by 10 inches; add height for more states or covariates.

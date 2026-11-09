@@ -523,9 +523,70 @@ plot_ssf_states(fit3, assessment = ecology, step_scale = 1000, step_unit = "m",
   colours = state_colours)
 ```
 
-![Ecological labels linked to a 48-hour trajectory, observed movements
-and directional persistence in the three-state habitat
-model.](zebra-state-count_files/figure-html/ecological-habitat-overview-1.png)
+![One-page zebra summary with a state table, a 48-hour trajectory,
+overlaid length and circular turning densities, four covariate intervals
+and one common state
+legend.](zebra-state-count_files/figure-html/ecological-habitat-overview-1.png)
+
+One common legend links the states across the page. To save this
+overview, use
+`ggplot2::ggsave("zebra-states.pdf", width = 12, height = 10)` after
+drawing it. More covariates or longer state names may need a taller
+page.
+
+The console gives the same covariate estimates and intervals, grouped by
+state. Reference habitats are supplied in the labels below; the package
+does not guess factor coding from coefficient names.
+
+``` r
+
+print(fit3, assessment = ecology, term_labels = setNames(effect_names, effect_terms),
+  step_scale = 1000, step_unit = "m")
+#> Fitted HMM-SSF
+#> 3 state(s) | 6,375 decoded steps | 26 segment(s)
+#> Step-length family: gamma | normalisation: importance | measure: area
+#> Log likelihood: 12327.57
+#> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 4.66e-10
+#>
+#> States (decoded steps)
+#>  State                       Steps Share Mean step (m)
+#>  Local movement              2733  42.9%  33.8
+#>  Persistent grassland travel 1022  16.0% 698.0
+#>  Grassland movement          2620  41.1% 162.0
+#>
+#> Additional SSF covariates by state
+#>   Estimate [95% Wald CI]
+#>
+#>   Local movement
+#>     Direction to grassland target: 0.0456 [-0.0182, 0.110]
+#>     Bushed grassland vs grassland: -0.119 [-0.375, 0.137]
+#>     Bushland vs grassland: -0.138 [-0.545, 0.269]
+#>     Woodland vs grassland: -0.133 [-1.07, 0.805]
+#>
+#>   Persistent grassland travel
+#>     Direction to grassland target: 0.0148 [-0.141, 0.171]
+#>     Bushed grassland vs grassland: -1.76 [-2.02, -1.51]
+#>     Bushland vs grassland: -3.03 [-3.35, -2.70]
+#>     Woodland vs grassland: -3.34 [-3.76, -2.92]
+#>
+#>   Grassland movement
+#>     Direction to grassland target: 0.0606 [-0.0122, 0.133]
+#>     Bushed grassland vs grassland: -0.603 [-0.791, -0.415]
+#>     Bushland vs grassland: -1.48 [-1.79, -1.18]
+#>     Woodland vs grassland: -1.20 [-1.61, -0.784]
+#>
+#>   Effects condition on the other model terms.
+#>   CIs condition on the fitted model and labels; they do not account for their
+#>   selection.
+#>   Use ssf_state_contrasts() to compare coefficients between states.
+#>
+#> Mean steps describe the intrinsic kernel; hourly and lag effects are held at
+#> baseline.
+```
+
+[`summary()`](https://rdrr.io/r/base/summary.html) adds the baseline
+movement coefficients and transition matrix. Its `ssf_effects` table
+contains the displayed covariate estimates and CIs.
 
 The map tells us where the inferred states occur. The distributions
 describe their movements. The coefficient intervals show which

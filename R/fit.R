@@ -453,15 +453,12 @@ fit_ssf <- function(data, formula = ~ step + log_step + cos_angle, n_states = 2L
   })
 }
 
+#' @rdname summary.ssf_fit
 #' @export
-print.ssf_fit <- function(x, ...) {
-  heading <- if (is.null(x$transition_coefficients)) "Homogeneous HMM-SSF:" else "Daily-transition HMM-SSF:"
-  cat(heading, x$n_states, "state(s),",
-      nrow(x$observations), "observed steps in", length(unique(x$observations$ID)), "segment(s)\n")
-  if (!is.null(x$step_family)) cat("Step-length family:", x$step_family, "\n")
-  cat("Log likelihood:", format(x$log_likelihood),
-      "| converged:", x$diagnostics$converged,
-      "| positive Hessian:", x$diagnostics$hessian_positive, "\n")
+print.ssf_fit <- function(x, digits = 3L, assessment = NULL, term_labels = NULL,
+                          step_scale = 1, step_unit = "input units", ...) {
+  .print_ssf_overview(summary(x, assessment = assessment, term_labels = term_labels,
+    step_scale = step_scale, step_unit = step_unit), digits)
   invisible(x)
 }
 

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">behavSSF</a>
 
-    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9013</small>
+    <small class="nav-text text-info me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.1.0.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
+<li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/zebra-hwange.html">Behavioural states of a Hwange zebra</a></li>
@@ -100,13 +100,30 @@ step. This makes the target available before the zebra moves.</p>
 <span>  normalization <span class="op">=</span> <span class="st">"exact"</span>, n_starts <span class="op">=</span> <span class="fl">8</span>, short_iter <span class="op">=</span> <span class="fl">100</span>, long_iter <span class="op">=</span> <span class="fl">900</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1729</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">result</span></span>
-<span><span class="co">#&gt; Guided HMM-SSF with 6377 observed steps</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span>, step_scale <span class="op">=</span> <span class="fl">1000</span>, step_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Candidate taxonomies in the order tried</span></span>
 <span><span class="co">#&gt;   HDT_F_R (Habitat-directed travelling / Foraging / Resting) [Rejected]</span></span>
 <span><span class="co">#&gt;     The 95% confidence interval for the travelling state's target effect must</span></span>
 <span><span class="co">#&gt;     lie entirely above zero.</span></span>
-<span><span class="co">#&gt;   T_F_R (Travelling / Foraging / Resting) [Selected]</span></span></code></pre></div>
+<span><span class="co">#&gt;   T_F_R (Travelling / Foraging / Resting) [Selected]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Fitted HMM-SSF</span></span>
+<span><span class="co">#&gt; 3 state(s) | 6,377 decoded steps | 28 segment(s)</span></span>
+<span><span class="co">#&gt; Step-length family: gamma | normalisation: exact | measure: area </span></span>
+<span><span class="co">#&gt; Log likelihood: 12088.31 </span></span>
+<span><span class="co">#&gt; Converged: TRUE | positive Hessian: TRUE | scaled gradient: 9.91e-07 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; States (decoded steps)</span></span>
+<span><span class="co">#&gt;  State      Steps Share Mean step (m)</span></span>
+<span><span class="co">#&gt;  Travelling  805  12.6% 730.0        </span></span>
+<span><span class="co">#&gt;  Foraging   2662  41.7% 172.0        </span></span>
+<span><span class="co">#&gt;  Resting    2910  45.6%  36.7        </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Additional SSF covariates by state</span></span>
+<span><span class="co">#&gt;   No additional covariates in this model.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Mean steps describe the intrinsic kernel; hourly and lag effects are held at</span></span>
+<span><span class="co">#&gt; baseline.</span></span></code></pre></div>
 <p>With the default taxonomy, the function first tries habitat-directed
 travelling (HDT), foraging and resting. The travelling state must have
 the longest mean step and more concentrated turns than the foraging
@@ -158,6 +175,11 @@ selects travelling, foraging and resting.</p>
 </tr>
 </tbody>
 </table>
+<p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> lists the states and their counts in readable
+form. If the model contains additional covariates, it gives their
+estimates and conditional 95% intervals under each state.
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> also shows the baseline movement coefficients and
+transition probabilities.</p>
 <p>The counts come from the Viterbi sequence, which assigns one label to
 each step. The means come from the fitted movement distributions.
 <code>overview$candidates</code> gives the outcome of each candidate
@@ -243,33 +265,49 @@ interval.</p>
 <span><span class="co">#&gt; Candidate taxonomies in the order tried</span></span>
 <span><span class="co">#&gt;   length_regimes (Short / Intermediate / Long) [Selected]</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; HMM-SSF summary</span></span>
-<span><span class="co">#&gt; 6377 observed steps in 28 segment(s)</span></span>
-<span><span class="co">#&gt; Normalisation: exact | density measure: area </span></span>
-<span><span class="co">#&gt; Step-length family: weibull </span></span>
-<span><span class="co">#&gt; Log likelihood: 12084 </span></span>
+<span><span class="co">#&gt; Fitted HMM-SSF</span></span>
+<span><span class="co">#&gt; 3 state(s) | 6,377 decoded steps | 28 segment(s)</span></span>
+<span><span class="co">#&gt; Step-length family: weibull | normalisation: exact | measure: area </span></span>
+<span><span class="co">#&gt; Log likelihood: 12083.89 </span></span>
 <span><span class="co">#&gt; Converged: TRUE | positive Hessian: TRUE | scaled gradient: 3.833e-13 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; States (Viterbi assignments)</span></span>
-<span><span class="co">#&gt;         state n_steps fraction mean_step persistence</span></span>
-<span><span class="co">#&gt;         Short    2786   0.4369   0.03726    -0.05815</span></span>
-<span><span class="co">#&gt;  Intermediate    2732   0.4284   0.16366     0.61340</span></span>
-<span><span class="co">#&gt;          Long     859   0.1347   0.68498     2.31714</span></span>
+<span><span class="co">#&gt; States (decoded steps)</span></span>
+<span><span class="co">#&gt;  State        Steps Share Mean step (input units)</span></span>
+<span><span class="co">#&gt;  Short        2786  43.7% 0.03726                </span></span>
+<span><span class="co">#&gt;  Intermediate 2732  42.8% 0.16370                </span></span>
+<span><span class="co">#&gt;  Long          859  13.5% 0.68500                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Step-selection coefficients</span></span>
-<span><span class="co">#&gt;         state                     term estimate std_error</span></span>
-<span><span class="co">#&gt;         Short               step_shape  0.98177  0.018046</span></span>
-<span><span class="co">#&gt;         Short               step_scale  0.03696  0.001939</span></span>
-<span><span class="co">#&gt;         Short                cos_angle -0.05815  0.034849</span></span>
-<span><span class="co">#&gt;         Short cos_diff_theta_to_target  0.04444  0.032262</span></span>
-<span><span class="co">#&gt;  Intermediate               step_shape  1.27839  0.041199</span></span>
-<span><span class="co">#&gt;  Intermediate               step_scale  0.17659  0.008373</span></span>
-<span><span class="co">#&gt;  Intermediate                cos_angle  0.61340  0.051760</span></span>
-<span><span class="co">#&gt;  Intermediate cos_diff_theta_to_target  0.12475  0.036643</span></span>
-<span><span class="co">#&gt;          Long               step_shape  1.57813  0.071365</span></span>
-<span><span class="co">#&gt;          Long               step_scale  0.76300  0.033531</span></span>
-<span><span class="co">#&gt;          Long                cos_angle  2.31714  0.153591</span></span>
-<span><span class="co">#&gt;          Long cos_diff_theta_to_target  0.14002  0.087851</span></span>
+<span><span class="co">#&gt; Additional SSF covariates by state</span></span>
+<span><span class="co">#&gt;   Estimate [95% Wald CI]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Short</span></span>
+<span><span class="co">#&gt;     Direction to target: 0.04444 [-0.01880, 0.1077]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Intermediate</span></span>
+<span><span class="co">#&gt;     Direction to target: 0.1247 [0.05293, 0.1966]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Long</span></span>
+<span><span class="co">#&gt;     Direction to target: 0.1400 [-0.03217, 0.3122]</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Effects condition on the other model terms.</span></span>
+<span><span class="co">#&gt;   CIs condition on the fitted model and labels; they do not account for their</span></span>
+<span><span class="co">#&gt;   selection.</span></span>
+<span><span class="co">#&gt;   Use ssf_state_contrasts() to compare coefficients between states.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Mean steps describe the intrinsic kernel; hourly and lag effects are held at</span></span>
+<span><span class="co">#&gt; baseline.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Baseline movement coefficients (estimate and standard error)</span></span>
+<span><span class="co">#&gt;         state       term estimate std_error</span></span>
+<span><span class="co">#&gt;         Short step_shape  0.98177  0.018046</span></span>
+<span><span class="co">#&gt;         Short step_scale  0.03696  0.001939</span></span>
+<span><span class="co">#&gt;         Short  cos_angle -0.05815  0.034849</span></span>
+<span><span class="co">#&gt;  Intermediate step_shape  1.27839  0.041199</span></span>
+<span><span class="co">#&gt;  Intermediate step_scale  0.17659  0.008373</span></span>
+<span><span class="co">#&gt;  Intermediate  cos_angle  0.61340  0.051760</span></span>
+<span><span class="co">#&gt;          Long step_shape  1.57813  0.071365</span></span>
+<span><span class="co">#&gt;          Long step_scale  0.76300  0.033531</span></span>
+<span><span class="co">#&gt;          Long  cos_angle  2.31714  0.153591</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Transition probabilities (rows are origin states)</span></span>
 <span><span class="co">#&gt;               Short Intermediate    Long</span></span>

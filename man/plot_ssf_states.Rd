@@ -65,12 +65,13 @@ see \code{\link[=ssf_state_contrasts]{ssf_state_contrasts()}}.}
 A ggplot object, or a patchwork for combined views. ggplot2 is required;
 combined views also require patchwork. The turning-angle panel requires
 ggcircular. Missing observations or covariance
-are identified in the relevant panel.
+are identified in the relevant panel. For an overview with four covariates,
+export at about 12 by 10 inches; add height for more states or covariates.
 }
 \description{
 Combines a labelled state table, a track, observed movement distributions
 and coefficient intervals. The distributions group the observations by
 their Viterbi labels; they are descriptive, not independent validation.
-The same state colours are used throughout. Coefficient intervals condition
+The overview uses one common state legend. The same colours are used throughout. Coefficient intervals condition
 on the fitted model and labels and do not adjust for model or taxonomy selection.
 }

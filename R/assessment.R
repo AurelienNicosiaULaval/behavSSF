@@ -285,11 +285,18 @@ fit_guided_ssf <- function(data, convention, target = NULL, n_starts = 5L,
   })
 }
 
+#' @name summary.ssf_fit
+#' @rdname summary.ssf_fit
 #' @export
-print.guided_ssf <- function(x, ...) {
-  if (is.null(x$fit)) cat("Guided HMM-SSF. No candidate selected.\n") else
-    cat("Guided HMM-SSF with", nrow(x$fit$observations), "observed steps\n")
+print.guided_ssf <- function(x, digits = 3L, assessment = NULL, term_labels = NULL,
+                             step_scale = 1, step_unit = "input units", ...) {
+  if (is.null(x$fit)) cat("No selected fit.\n")
   .print_guided_candidates(.guided_candidates(x))
+  if (!is.null(x$fit)) {
+    cat("\n")
+    .print_ssf_overview(summary(x, assessment = assessment, term_labels = term_labels,
+      step_scale = step_scale, step_unit = step_unit), digits)
+  }
   invisible(x)
 }
 

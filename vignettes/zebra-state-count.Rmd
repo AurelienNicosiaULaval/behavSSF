@@ -444,12 +444,28 @@ than habitat-directed travelling. Selection of an endpoint habitat and
 orientation towards a target fixed at the start of a step are different
 quantities.
 
-```{r ecological-habitat-overview, fig.width=13, fig.height=11, fig.alt="Ecological labels linked to a 48-hour trajectory, observed movements and directional persistence in the three-state habitat model."}
+```{r ecological-habitat-overview, fig.width=12, fig.height=10, fig.alt="One-page zebra summary with a state table, a 48-hour trajectory, overlaid length and circular turning densities, four covariate intervals and one common state legend."}
 plot_ssf_states(fit3, assessment = ecology, step_scale = 1000, step_unit = "m",
   coord_unit = "km", segment = names(which.max(table(fit3$observations$ID))),
   step_range = c(1, 96), terms = effect_terms, term_labels = setNames(effect_names, effect_terms),
   colours = state_colours)
 ```
+
+One common legend links the states across the page. To save this overview,
+use `ggplot2::ggsave("zebra-states.pdf", width = 12, height = 10)` after
+drawing it. More covariates or longer state names may need a taller page.
+
+The console gives the same covariate estimates and intervals, grouped by
+state. Reference habitats are supplied in the labels below; the package
+does not guess factor coding from coefficient names.
+
+```{r ecological-console}
+print(fit3, assessment = ecology, term_labels = setNames(effect_names, effect_terms),
+  step_scale = 1000, step_unit = "m")
+```
+
+`summary()` adds the baseline movement coefficients and transition matrix.
+Its `ssf_effects` table contains the displayed covariate estimates and CIs.
 
 The map tells us where the inferred states occur. The distributions describe
 their movements. The coefficient intervals show which environmental and

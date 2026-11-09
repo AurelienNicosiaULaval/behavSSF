@@ -1,5 +1,21 @@
 # Changelog
 
+## behavSSF 0.1.0.9014
+
+- The ecological overview combines the trajectory, movement densities
+  and additional covariate intervals on one page with a single state
+  legend. Shorter titles and a compact state table leave more room for
+  the plots.
+- [`print()`](https://rdrr.io/r/base/print.html) now reports decoded
+  state counts and additional SSF covariates with conditional 95% Wald
+  intervals, grouped by state. Readable term labels can include known
+  reference categories.
+  [`summary()`](https://rdrr.io/r/base/summary.html) also retains the
+  baseline movement coefficients and transition probabilities.
+- Print and summary methods accept an assessment, readable covariate
+  names and distance units. Summaries return the displayed effects in
+  `ssf_effects`.
+
 ## behavSSF 0.1.0.9013
 
 - Focus coefficient and contrast panels on additional covariates.

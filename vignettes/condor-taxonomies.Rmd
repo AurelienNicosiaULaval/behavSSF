@@ -243,6 +243,18 @@ plot_ssf_states(context$context, panel = "contrasts", assessment = context_label
   terms = context_terms, term_labels = context_names)
 ```
 
+The context model can also be read on one page. Its table, track,
+distributions and altitude intervals all use the same 1,287-step fit and
+share one state legend.
+
+```{r context-overview, fig.width=12, fig.height=8.5, fig.alt="One-page context-model summary of condor flight, including the altitude-response intervals and one shared state legend."}
+plot_ssf_states(context$context, assessment = context_labels,
+  coords = c("x0_m", "y0_m", "x_m", "y_m"),
+  segment = names(which.max(table(context$context$observations$ID))),
+  step_scale = 1000, step_unit = "m", coord_unit = "m",
+  term_labels = context_names, colours = palette)
+```
+
 The coefficient panels focus on the additional altitude effect. The baseline
 turning coefficient is already described by the movement views.
 

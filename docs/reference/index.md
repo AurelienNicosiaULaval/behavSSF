@@ -27,7 +27,9 @@
   : Score and decode a fitted HMM-SSF with daily transitions
 - [`movement_metrics()`](https://aureliennicosiaulaval.github.io/behavSSF/reference/movement_metrics.md)
   : Recover movement summaries under an explicit kernel convention
-- [`summary(`*`<ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
+- [`print(`*`<guided_ssf>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
+  [`print(`*`<ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
+  [`summary(`*`<ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
   [`summary(`*`<guided_ssf>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
   [`print(`*`<summary_ssf_fit>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)
   [`print(`*`<summary_guided_ssf>`*`)`](https://aureliennicosiaulaval.github.io/behavSSF/reference/summary.ssf_fit.md)

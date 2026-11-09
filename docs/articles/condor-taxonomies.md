@@ -65,9 +65,25 @@ result <- fit_guided_ssf(
   n_starts = 8, short_iter = 100, long_iter = 900, seed = 1729
 )
 print(result)
-#> Guided HMM-SSF with 1304 observed steps
 #> Candidate taxonomies in the order tried
 #>   flight_modes (Circling-like flight / Directed flight) [Selected]
+#>
+#> Fitted HMM-SSF
+#> 2 state(s) | 1,304 decoded steps | 17 segment(s)
+#> Step-length family: gamma | normalisation: exact | measure: area
+#> Log likelihood: 5805.247
+#> Converged: TRUE | positive Hessian: TRUE | scaled gradient: 2.59e-07
+#>
+#> States (decoded steps)
+#>  State                Steps Share Mean step (input units)
+#>  Circling-like flight 936   71.8% 0.0435
+#>  Directed flight      368   28.2% 0.0667
+#>
+#> Additional SSF covariates by state
+#>   No additional covariates in this model.
+#>
+#> Mean steps describe the intrinsic kernel; hourly and lag effects are held at
+#> baseline.
 result$history$flight_modes$assessment$checks
 #>           converged             hessian               score        valid_kernel
 #>                TRUE                TRUE                TRUE                TRUE
@@ -349,6 +365,23 @@ plot_ssf_states(context$context, panel = "contrasts", assessment = context_label
 ![Difference between states in the altitude response with its
 joint-covariance 95 percent confidence
 interval.](condor-taxonomies_files/figure-html/context-contrasts-1.png)
+
+The context model can also be read on one page. Its table, track,
+distributions and altitude intervals all use the same 1,287-step fit and
+share one state legend.
+
+``` r
+
+plot_ssf_states(context$context, assessment = context_labels,
+  coords = c("x0_m", "y0_m", "x_m", "y_m"),
+  segment = names(which.max(table(context$context$observations$ID))),
+  step_scale = 1000, step_unit = "m", coord_unit = "m",
+  term_labels = context_names, colours = palette)
+```
+
+![One-page context-model summary of condor flight, including the
+altitude-response intervals and one shared state
+legend.](condor-taxonomies_files/figure-html/context-overview-1.png)
 
 The coefficient panels focus on the additional altitude effect. The
 baseline turning coefficient is already described by the movement views.
